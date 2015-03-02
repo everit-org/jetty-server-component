@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.osgi.jetty.server.component.internal;
+package org.everit.osgi.jetty.server.component;
 
-import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.server.NetworkConnector;
+import org.eclipse.jetty.server.Server;
 
-public interface ServletContextHandlerFactory {
+public interface NetworkConnectorFactory {
 
-  ServletContextHandler createServletContextHandler(String contextPath);
+  NetworkConnector createNetworkConnector(Server server, String host, int port);
 }
