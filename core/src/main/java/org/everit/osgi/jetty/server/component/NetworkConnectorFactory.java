@@ -21,4 +21,5 @@ import org.eclipse.jetty.server.Server;
 public interface NetworkConnectorFactory {
 
   NetworkConnector createNetworkConnector(Server server, String host, int port);
+
 }

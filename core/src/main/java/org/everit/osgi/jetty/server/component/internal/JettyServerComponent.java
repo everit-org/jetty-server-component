@@ -32,7 +32,7 @@ import org.everit.osgi.ecm.component.ComponentContext;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.component.JettyComponentConstants;
+import org.everit.osgi.jetty.server.component.JettyServerConstants;
 import org.everit.osgi.jetty.server.component.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
 import org.osgi.framework.ServiceRegistration;
@@ -46,7 +46,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 public class JettyServerComponent {
 
   @ServiceRef(setter = "setNetworkConnectorFactories",
-      configurationType = ReferenceConfigurationType.CLAUSE, optional = false)
+      configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true)
   private ServiceHolder<NetworkConnectorFactory>[] networkConnectorFactories;
 
   private Server server;
@@ -66,8 +66,10 @@ public class JettyServerComponent {
 
     for (ServiceHolder<NetworkConnectorFactory> serviceHolder : networkConnectorFactories) {
       NetworkConnectorFactory networkConnectorFactory = serviceHolder.getService();
+      Map<String, Object> attributes = serviceHolder.getAttributes();
 
-      // TODO get host and port from attributes
+      String host = resolveHostFromAttributes(attributes);
+      int port = resolvePortFromAttributes(serviceHolder.getReferenceId(), attributes);
 
       NetworkConnector connector = networkConnectorFactory.createNetworkConnector(server, host,
           port);
@@ -97,16 +99,16 @@ public class JettyServerComponent {
 
   private void addServletContextsToServer(final ContextHandlerCollection contextHandlerCollection) {
 
-    for (ServiceHolder<ServletContextHandlerFactory> serviceHolder : servletContextHandlerFactories) {
-      Map<String, Object> attributes = serviceHolder.getAttributes();
-      Object contextPath = attributes.get(JettyComponentConstants.ATTR_CONTEXTPATH);
+    for (ServiceHolder<ServletContextHandlerFactory> holder : servletContextHandlerFactories) {
+      Map<String, Object> attributes = holder.getAttributes();
+      Object contextPath = attributes.get(JettyServerConstants.ATTR_CONTEXTPATH);
 
       if (contextPath == null) {
-        throw new ConfigurationException("'" + JettyComponentConstants.ATTR_CONTEXTPATH
+        throw new ConfigurationException("'" + JettyServerConstants.ATTR_CONTEXTPATH
             + "' attribute must be provided in clause");
       }
 
-      contextHandlerCollection.addHandler(serviceHolder.getService().createHandler(
+      contextHandlerCollection.addHandler(holder.getService().createHandler(
           contextHandlerCollection));
     }
   }
@@ -115,6 +117,30 @@ public class JettyServerComponent {
   public void deactivate() {
     if (serviceRegistration != null) {
       serviceRegistration.unregister();
+    }
+  }
+
+  private String resolveHostFromAttributes(final Map<String, Object> attributes) {
+    Object hostValue = attributes.get(JettyServerConstants.ATTR_HOST);
+    if (hostValue == null) {
+      return null;
+    }
+    return String.valueOf(hostValue);
+  }
+
+  private int resolvePortFromAttributes(final String referenceId,
+      final Map<String, Object> attributes) {
+
+    Object portValue = attributes.get(JettyServerConstants.ATTR_PORT);
+    if (portValue == null) {
+      return 0;
+    }
+
+    try {
+      return Integer.parseInt(String.valueOf(portValue));
+    } catch (NumberFormatException e) {
+      throw new ConfigurationException("Invalid value for connector port of reference: "
+          + referenceId, e);
     }
   }
 

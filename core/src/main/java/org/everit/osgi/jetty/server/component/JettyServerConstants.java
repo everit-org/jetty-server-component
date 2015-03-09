@@ -15,11 +15,13 @@
  */
 package org.everit.osgi.jetty.server.component;
 
-public class JettyComponentConstants {
+public class JettyServerConstants {
 
   public static final String ATTR_CONTEXTPATH = "contextPath";
 
   public static final Object ATTR_DISPATCHER = "dispatcher";
+
+  public static final String ATTR_HOST = "host";
 
   public static final String ATTR_MAPPING = "mapping";
 

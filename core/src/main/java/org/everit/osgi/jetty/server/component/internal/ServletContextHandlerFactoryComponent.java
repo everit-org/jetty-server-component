@@ -32,11 +32,12 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.ReferenceConfigurationType;
+import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.ServiceRef;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.component.JettyComponentConstants;
+import org.everit.osgi.jetty.server.component.JettyServerConstants;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
@@ -45,7 +46,10 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     configurationPolicy = ConfigurationPolicy.FACTORY)
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@Service(ServletContextHandlerFactory.class)
 public class ServletContextHandlerFactoryComponent implements ServletContextHandlerFactory {
+
+  // TODO make servlet and filter handling dynamic if possible
 
   @ServiceRef(setter = "setFilters", configurationType = ReferenceConfigurationType.CLAUSE,
       optional = true)
@@ -107,7 +111,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   private EnumSet<DispatcherType> resolveDispatcherTypes(final String attributeName,
       final Map<String, Object> clauseAttributes) {
     EnumSet<DispatcherType> dispatcherTypes;
-    Object dispatcherAttr = clauseAttributes.get(JettyComponentConstants.ATTR_DISPATCHER);
+    Object dispatcherAttr = clauseAttributes.get(JettyServerConstants.ATTR_DISPATCHER);
 
     if (dispatcherAttr == null) {
       dispatcherTypes = EnumSet.allOf(DispatcherType.class);
@@ -131,9 +135,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   private String resolveMapping(final String referenceName,
       final Map<String, Object> clauseAttributes) {
-    Object mappingAttrValue = clauseAttributes.get(JettyComponentConstants.ATTR_MAPPING);
+    Object mappingAttrValue = clauseAttributes.get(JettyServerConstants.ATTR_MAPPING);
     if (mappingAttrValue == null) {
-      throw new ConfigurationException("Attribute " + JettyComponentConstants.ATTR_MAPPING
+      throw new ConfigurationException("Attribute " + JettyServerConstants.ATTR_MAPPING
           + " must be specified for every " + referenceName + " clause");
     }
 

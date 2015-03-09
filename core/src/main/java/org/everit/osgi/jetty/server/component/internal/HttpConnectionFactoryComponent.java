@@ -38,7 +38,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 public class HttpConnectionFactoryComponent {
 
-  @BooleanAttribute(setter = "setDelayDispatchUntilContent")
+  @BooleanAttribute(setter = "setDelayDispatchUntilContent", defaultValue = false)
   private boolean delayDispatchUntilContent = false;
 
   private ServiceRegistration<ConnectionFactory> serviceRegistration;
