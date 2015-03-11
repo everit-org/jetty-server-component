@@ -16,8 +16,13 @@
 package org.everit.osgi.jetty.server.component.internal;
 
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.annotation.Generated;
 
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
@@ -35,6 +40,7 @@ import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.component.JettyServerConstants;
 import org.everit.osgi.jetty.server.component.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
@@ -45,9 +51,75 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 public class JettyServerComponent {
 
+  private static class ConnectorFactoryKey {
+
+    public String host;
+
+    public int port;
+
+    public ServiceReference<NetworkConnectorFactory> serviceReference;
+
+    public ConnectorFactoryKey(final ServiceReference<NetworkConnectorFactory> serviceReference,
+        final String host, final int port) {
+      this.serviceReference = serviceReference;
+      this.host = host;
+      this.port = port;
+    }
+
+    @Override
+    @Generated("eclipse")
+    public boolean equals(final Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      ConnectorFactoryKey other = (ConnectorFactoryKey) obj;
+      if (host == null) {
+        if (other.host != null) {
+          return false;
+        }
+      } else if (!host.equals(other.host)) {
+        return false;
+      }
+      if (port != other.port) {
+        return false;
+      }
+      if (serviceReference == null) {
+        if (other.serviceReference != null) {
+          return false;
+        }
+      } else if (!serviceReference.equals(other.serviceReference)) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    @Generated("eclipse")
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((host == null) ? 0 : host.hashCode());
+      result = prime * result + port;
+      result = prime * result + ((serviceReference == null) ? 0 : serviceReference.hashCode());
+      return result;
+    }
+
+  }
+
+  private ComponentContext<JettyServerComponent> componentContext;
+
   @ServiceRef(setter = "setNetworkConnectorFactories",
       configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true)
   private ServiceHolder<NetworkConnectorFactory>[] networkConnectorFactories;
+
+  private final HashMap<ConnectorFactoryKey, NetworkConnector> registeredConnectors =
+      new HashMap<>();
 
   private Server server;
 
@@ -59,23 +131,13 @@ public class JettyServerComponent {
   @Activate
   public void activate(final ComponentContext<JettyServerComponent> componentContext) {
 
+    this.componentContext = componentContext;
     server = new Server();
     ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
 
     server.setHandler(contextHandlerCollection);
 
-    for (ServiceHolder<NetworkConnectorFactory> serviceHolder : networkConnectorFactories) {
-      NetworkConnectorFactory networkConnectorFactory = serviceHolder.getService();
-      Map<String, Object> attributes = serviceHolder.getAttributes();
-
-      String host = resolveHostFromAttributes(attributes);
-      int port = resolvePortFromAttributes(serviceHolder.getReferenceId(), attributes);
-
-      NetworkConnector connector = networkConnectorFactory.createNetworkConnector(server, host,
-          port);
-
-      server.addConnector(connector);
-    }
+    updateConnectorFactoriesOnServer(networkConnectorFactories);
 
     addServletContextsToServer(contextHandlerCollection);
 
@@ -85,16 +147,33 @@ public class JettyServerComponent {
     try {
       server.start();
     } catch (Exception e) {
-      try {
-        server.stop();
-        server.destroy();
-      } catch (Exception stopE) {
-        e.addSuppressed(stopE);
-      }
-      // TODO
-      throw new RuntimeException(e);
+      fail(e);
+      return;
     }
     serviceRegistration = componentContext.registerService(Server.class, server, serviceProps);
+  }
+
+  private void addNewConnectors(
+      final Map<ConnectorFactoryKey, NetworkConnectorFactory> newConnectors) {
+    Set<Entry<ConnectorFactoryKey, NetworkConnectorFactory>> entrySet = newConnectors.entrySet();
+    for (Entry<ConnectorFactoryKey, NetworkConnectorFactory> entry : entrySet) {
+      NetworkConnectorFactory factory = entry.getValue();
+      ConnectorFactoryKey factoryParams = entry.getKey();
+
+      NetworkConnector connector = factory.createNetworkConnector(server, factoryParams.host,
+          factoryParams.port);
+
+      server.addConnector(connector);
+      if (server.isStarted() && !connector.isStarted()) {
+        try {
+          connector.start();
+        } catch (Exception e) {
+          fail(e);
+          return;
+        }
+      }
+      registeredConnectors.put(factoryParams, connector);
+    }
   }
 
   private void addServletContextsToServer(final ContextHandlerCollection contextHandlerCollection) {
@@ -117,6 +196,40 @@ public class JettyServerComponent {
   public void deactivate() {
     if (serviceRegistration != null) {
       serviceRegistration.unregister();
+    }
+
+    if (server != null) {
+      try {
+        server.stop();
+        server.destroy();
+      } catch (Exception e) {
+        // TODO
+        throw new RuntimeException(e);
+      }
+    }
+
+  }
+
+  private void deleteConnectors(
+      final HashMap<ConnectorFactoryKey, NetworkConnector> connectorsToDelete) {
+    Set<Entry<ConnectorFactoryKey, NetworkConnector>> connectorToDeleteSet = connectorsToDelete
+        .entrySet();
+    for (Entry<ConnectorFactoryKey, NetworkConnector> connectorToDelete : connectorToDeleteSet) {
+      registeredConnectors.remove(connectorToDelete.getKey());
+      server.removeConnector(connectorToDelete.getValue());
+    }
+  }
+
+  private void fail(final Throwable e) {
+
+    if (server != null) {
+      try {
+        server.stop();
+        server.destroy();
+      } catch (Exception stopE) {
+        e.addSuppressed(stopE);
+      }
+      componentContext.fail(e);
     }
   }
 
@@ -146,11 +259,51 @@ public class JettyServerComponent {
 
   public void setNetworkConnectorFactories(
       final ServiceHolder<NetworkConnectorFactory>[] networkConnectorFactories) {
-    this.networkConnectorFactories = networkConnectorFactories;
+    updateConnectorFactories(networkConnectorFactories);
   }
 
   public void setServletContextHandlerFactories(
       final ServiceHolder<ServletContextHandlerFactory>[] servletContextHandlerFactories) {
     this.servletContextHandlerFactories = servletContextHandlerFactories;
+  }
+
+  private synchronized void updateConnectorFactories(
+      final ServiceHolder<NetworkConnectorFactory>[] pNetworkConnectorFactories) {
+    if (server == null) {
+      this.networkConnectorFactories = pNetworkConnectorFactories;
+    } else {
+      updateConnectorFactoriesOnServer(pNetworkConnectorFactories);
+    }
+  }
+
+  private void updateConnectorFactoriesOnServer(
+      final ServiceHolder<NetworkConnectorFactory>[] newNetworkConnectorFactories) {
+    @SuppressWarnings("unchecked")
+    HashMap<ConnectorFactoryKey, NetworkConnector> connectorsToDelete =
+        (HashMap<ConnectorFactoryKey, NetworkConnector>) registeredConnectors.clone();
+
+    Map<ConnectorFactoryKey, NetworkConnectorFactory> newConnectors = new HashMap<>();
+
+    for (ServiceHolder<NetworkConnectorFactory> serviceHolder : newNetworkConnectorFactories) {
+      NetworkConnectorFactory connectorFactory = serviceHolder.getService();
+      Map<String, Object> attributes = serviceHolder.getAttributes();
+      String host = resolveHostFromAttributes(attributes);
+      int port = resolvePortFromAttributes(serviceHolder.getReferenceId(), attributes);
+
+      ServiceReference<NetworkConnectorFactory> reference = serviceHolder.getReference();
+      ConnectorFactoryKey factoryKey = new ConnectorFactoryKey(reference, host, port);
+
+      if (connectorsToDelete.containsKey(factoryKey)) {
+        connectorsToDelete.remove(factoryKey);
+      } else {
+        newConnectors.put(factoryKey, connectorFactory);
+      }
+
+    }
+
+    deleteConnectors(connectorsToDelete);
+
+    addNewConnectors(newConnectors);
+
   }
 }
