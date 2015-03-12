@@ -33,6 +33,8 @@ import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Deactivate;
 import org.everit.osgi.ecm.annotation.ReferenceConfigurationType;
 import org.everit.osgi.ecm.annotation.ServiceRef;
+import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
+import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ComponentContext;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
@@ -40,28 +42,40 @@ import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.component.JettyServerConstants;
 import org.everit.osgi.jetty.server.component.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
+import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
+/**
+ * ECM based configurable component that can start one or more Jetty {@link Server}s.
+ */
 @Component(componentId = "org.everit.osgi.jetty.server.component.JettyServer",
-    configurationPolicy = ConfigurationPolicy.FACTORY)
+    configurationPolicy = ConfigurationPolicy.FACTORY,
+    localizationBase = "OSGI-INF/metatype/jettyServer")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@StringAttributes(@StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true))
 public class JettyServerComponent {
 
+  /**
+   * Helper class to identify connector references with their settings in hash based collections.
+   */
   private static class ConnectorFactoryKey {
 
-    public String host;
+    public final String connectorId;
 
-    public int port;
+    public final String host;
+
+    public final int port;
 
     public ServiceReference<NetworkConnectorFactory> serviceReference;
 
-    public ConnectorFactoryKey(final ServiceReference<NetworkConnectorFactory> serviceReference,
+    public ConnectorFactoryKey(final ServiceHolder<NetworkConnectorFactory> serviceHolder,
         final String host, final int port) {
-      this.serviceReference = serviceReference;
+      this.serviceReference = serviceHolder.getReference();
+      this.connectorId = serviceHolder.getReferenceId();
       this.host = host;
       this.port = port;
     }
@@ -79,6 +93,13 @@ public class JettyServerComponent {
         return false;
       }
       ConnectorFactoryKey other = (ConnectorFactoryKey) obj;
+      if (connectorId == null) {
+        if (other.connectorId != null) {
+          return false;
+        }
+      } else if (!connectorId.equals(other.connectorId)) {
+        return false;
+      }
       if (host == null) {
         if (other.host != null) {
           return false;
@@ -104,6 +125,7 @@ public class JettyServerComponent {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
+      result = prime * result + ((connectorId == null) ? 0 : connectorId.hashCode());
       result = prime * result + ((host == null) ? 0 : host.hashCode());
       result = prime * result + port;
       result = prime * result + ((serviceReference == null) ? 0 : serviceReference.hashCode());
@@ -112,10 +134,6 @@ public class JettyServerComponent {
 
   }
 
-  private ComponentContext<JettyServerComponent> componentContext;
-
-  @ServiceRef(setter = "setNetworkConnectorFactories",
-      configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true)
   private ServiceHolder<NetworkConnectorFactory>[] networkConnectorFactories;
 
   private final HashMap<ConnectorFactoryKey, NetworkConnector> registeredConnectors =
@@ -125,13 +143,13 @@ public class JettyServerComponent {
 
   private ServiceRegistration<Server> serviceRegistration;
 
-  @ServiceRef(setter = "setServletContextHandlerFactories", optional = true)
   private ServiceHolder<ServletContextHandlerFactory>[] servletContextHandlerFactories;
 
+  /**
+   * Activate method of the component that sets up and starts a server.
+   */
   @Activate
   public void activate(final ComponentContext<JettyServerComponent> componentContext) {
-
-    this.componentContext = componentContext;
     server = new Server();
     ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
 
@@ -180,18 +198,21 @@ public class JettyServerComponent {
 
     for (ServiceHolder<ServletContextHandlerFactory> holder : servletContextHandlerFactories) {
       Map<String, Object> attributes = holder.getAttributes();
-      Object contextPath = attributes.get(JettyServerConstants.ATTR_CONTEXTPATH);
+      Object contextPath = attributes.get(JettyServerConstants.CONTEXT_CLAUSE_ATTR_CONTEXTPATH);
 
       if (contextPath == null) {
-        throw new ConfigurationException("'" + JettyServerConstants.ATTR_CONTEXTPATH
-            + "' attribute must be provided in clause");
+        throw new ConfigurationException("'" + JettyServerConstants.CONTEXT_CLAUSE_ATTR_CONTEXTPATH
+            + "' attribute must be provided in clause of ServletContextHandlerFactory");
       }
 
       contextHandlerCollection.addHandler(holder.getService().createHandler(
-          contextHandlerCollection));
+          contextHandlerCollection, String.valueOf(contextPath)));
     }
   }
 
+  /**
+   * Deactivate method that stops the server if it is running.
+   */
   @Deactivate
   public void deactivate() {
     if (serviceRegistration != null) {
@@ -229,12 +250,16 @@ public class JettyServerComponent {
       } catch (Exception stopE) {
         e.addSuppressed(stopE);
       }
-      componentContext.fail(e);
+      if (e instanceof RuntimeException) {
+        throw (RuntimeException) e;
+      }
+      // TODO
+      throw new RuntimeException(e);
     }
   }
 
   private String resolveHostFromAttributes(final Map<String, Object> attributes) {
-    Object hostValue = attributes.get(JettyServerConstants.ATTR_HOST);
+    Object hostValue = attributes.get(JettyServerConstants.CONNECTOR_REF_CLAUSE_ATTR_HOST);
     if (hostValue == null) {
       return null;
     }
@@ -244,7 +269,7 @@ public class JettyServerComponent {
   private int resolvePortFromAttributes(final String referenceId,
       final Map<String, Object> attributes) {
 
-    Object portValue = attributes.get(JettyServerConstants.ATTR_PORT);
+    Object portValue = attributes.get(JettyServerConstants.CONNECTOR_REF_CLAUSE_ATTR_PORT);
     if (portValue == null) {
       return 0;
     }
@@ -257,11 +282,15 @@ public class JettyServerComponent {
     }
   }
 
+  @ServiceRef(referenceId = JettyServerConstants.SERVICE_REF_NETWORK_CONNECTOR_FACTORIES,
+      configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true)
   public void setNetworkConnectorFactories(
       final ServiceHolder<NetworkConnectorFactory>[] networkConnectorFactories) {
     updateConnectorFactories(networkConnectorFactories);
   }
 
+  @ServiceRef(referenceId = JettyServerConstants.SERVICE_REF_SERVLET_CONTEXT_HANDLER_FACTORIES,
+      configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
   public void setServletContextHandlerFactories(
       final ServiceHolder<ServletContextHandlerFactory>[] servletContextHandlerFactories) {
     this.servletContextHandlerFactories = servletContextHandlerFactories;
@@ -290,8 +319,7 @@ public class JettyServerComponent {
       String host = resolveHostFromAttributes(attributes);
       int port = resolvePortFromAttributes(serviceHolder.getReferenceId(), attributes);
 
-      ServiceReference<NetworkConnectorFactory> reference = serviceHolder.getReference();
-      ConnectorFactoryKey factoryKey = new ConnectorFactoryKey(reference, host, port);
+      ConnectorFactoryKey factoryKey = new ConnectorFactoryKey(serviceHolder, host, port);
 
       if (connectorsToDelete.containsKey(factoryKey)) {
         connectorsToDelete.remove(factoryKey);

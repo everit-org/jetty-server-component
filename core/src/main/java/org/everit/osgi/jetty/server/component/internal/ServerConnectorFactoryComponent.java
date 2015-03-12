@@ -39,8 +39,13 @@ import org.everit.osgi.jetty.server.component.ServerConnectorFactoryConstants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
+/**
+ * ECM based configurable component that can set up and register {@link NetworkConnectorFactory}s.
+ *
+ */
 @Component(componentId = "org.everit.osgi.jetty.server.component.ServerConnectorFactory",
-    configurationPolicy = ConfigurationPolicy.FACTORY, metatype = true)
+    configurationPolicy = ConfigurationPolicy.FACTORY,
+    localizationBase = "OSGI-INF/metatype/serverConnectorFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @AttributeOrder({ ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORIES + ".target",
@@ -53,7 +58,6 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     ServerConnectorFactoryConstants.PROP_ACCEPTOR_PRIORITY_DELTA,
     ServerConnectorFactoryConstants.PROP_SELECTOR_PRIORITY_DELTA, })
 @Service
-// TODO Check if we want to handle stopTimeout
 public class ServerConnectorFactoryComponent implements NetworkConnectorFactory {
 
   private int acceptorPriorityDelta;
@@ -128,6 +132,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     providedConnectors.put(result, Boolean.TRUE);
   }
 
+  /**
+   * Setter that also updates the property on the connector without restarting it.
+   */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.PROP_ACCEPTOR_PRIORITY_DELTA,
       defaultValue = 0, dynamic = true)
   public synchronized void setAcceptorPriorityDelta(final int acceptorPriorityDelta) {
@@ -139,6 +146,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     this.acceptorPriorityDelta = acceptorPriorityDelta;
   }
 
+  /**
+   * Setter that also updates the property on the connector without restarting it.
+   */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.PROP_ACCEPT_QUEUE_SIZE,
       defaultValue = 0, dynamic = true)
   public synchronized void setAcceptQueueSize(final int acceptQueueSize) {
@@ -150,6 +160,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     this.acceptQueueSize = acceptQueueSize;
   }
 
+  /**
+   * Setter that also updates the property on the connector without restarting it.
+   */
   @ServiceRef(referenceId = ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORIES,
       dynamic = true)
   public synchronized void setConnectionFactories(final ConnectionFactory[] connectionFactories) {
@@ -161,6 +174,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     this.connectionFactories = connectionFactories;
   }
 
+  /**
+   * Setter that also updates the property on the connector without restarting it.
+   */
   @StringAttribute(attributeId = ServerConnectorFactoryConstants.PROP_DEFAULT_PROTOCOL,
       optional = true, dynamic = true)
   public synchronized void setDefaultProtocol(final String defaultProtocol) {
@@ -172,6 +188,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     this.defaultProtocol = defaultProtocol;
   }
 
+  /**
+   * Setter that also updates the property on the connector without restarting it.
+   */
   @LongAttribute(attributeId = ServerConnectorFactoryConstants.PROP_IDLE_TIMEOUT,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_IDLE_TIMEOUT)
   public synchronized void setIdleTimeout(final long idleTimeout) {

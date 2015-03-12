@@ -42,6 +42,11 @@ import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
+/**
+ * ECM based configurable component that registers one or more instantiated
+ * {@link ServletContextHandler} OSGi services. The component handles filter and servlet reference
+ * changes dynamically.
+ */
 @Component(componentId = "org.everit.osgi.jetty.server.component.ServletContextHandlerFactory",
     configurationPolicy = ConfigurationPolicy.FACTORY)
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
@@ -92,8 +97,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   }
 
   @Override
-  public ServletContextHandler createHandler(final HandlerContainer parent) {
-    ServletContextHandler servletContextHandler = new ServletContextHandler();
+  public ServletContextHandler createHandler(final HandlerContainer parent,
+      final String contextPath) {
+    ServletContextHandler servletContextHandler = new ServletContextHandler(parent, contextPath);
 
     addFiltersToHandler(servletContextHandler);
     addServletsToHandler(servletContextHandler);

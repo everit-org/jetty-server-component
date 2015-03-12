@@ -32,6 +32,10 @@ import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
+/**
+ * ECM based configurable component that can start one or more {@link HttpConnectionFactory}s and
+ * register them as OSGi services.
+ */
 @Component(componentId = "org.everit.osgi.jetty.server.component.HttpConnectionFactory",
     configurationPolicy = ConfigurationPolicy.FACTORY)
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
@@ -43,6 +47,10 @@ public class HttpConnectionFactoryComponent {
 
   private ServiceRegistration<ConnectionFactory> serviceRegistration;
 
+  /**
+   * Activate method that sets up and registers the instantiated connection factory as an OSGi
+   * service.
+   */
   @Activate
   public void activate(final ComponentContext<HttpConnectionFactoryComponent> componentContext) {
     HttpConfiguration httpConfiguration = new HttpConfiguration();
@@ -57,11 +65,12 @@ public class HttpConnectionFactoryComponent {
         ConnectionFactory.class, httpConnectionFactory, properties);
   }
 
+  /**
+   * The deactivate method unregisters the {@link ConnectionFactory} OSGi service.
+   */
   @Deactivate
   public void deactivate() {
-    if (serviceRegistration != null) {
-      serviceRegistration.unregister();
-    }
+    serviceRegistration.unregister();
   }
 
   public void setDelayDispatchUntilContent(final boolean delayDispatchUntilContent) {

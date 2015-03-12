@@ -15,15 +15,28 @@
  */
 package org.everit.osgi.jetty.server.component;
 
-public class JettyServerConstants {
+/**
+ * Constants of the usage of Jetty Server Component.
+ */
+public final class JettyServerConstants {
 
-  public static final String ATTR_CONTEXTPATH = "contextPath";
-
+  // TODO move to ServletContextHandlerFactoryConstants
   public static final Object ATTR_DISPATCHER = "dispatcher";
 
-  public static final String ATTR_HOST = "host";
-
+  // TODO move to ServletContextHandlerFactoryConstants
   public static final String ATTR_MAPPING = "mapping";
 
-  public static final String ATTR_PORT = "port";
+  public static final String CONNECTOR_REF_CLAUSE_ATTR_HOST = "host";
+
+  public static final String CONNECTOR_REF_CLAUSE_ATTR_PORT = "port";
+
+  public static final String CONTEXT_CLAUSE_ATTR_CONTEXTPATH = "contextPath";
+
+  public static final String SERVICE_REF_NETWORK_CONNECTOR_FACTORIES = "networkConnectorFactories";
+
+  public static final String SERVICE_REF_SERVLET_CONTEXT_HANDLER_FACTORIES =
+      "servletContextHandlerFactories";
+
+  private JettyServerConstants() {
+  }
 }

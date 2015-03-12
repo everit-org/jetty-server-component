@@ -18,6 +18,7 @@ package org.everit.osgi.jetty.server.component;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 
+// TODO this interface should be moved to separate project
 public interface NetworkConnectorFactory {
 
   NetworkConnector createNetworkConnector(Server server, String host, int port);

@@ -20,5 +20,5 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 
 public interface ServletContextHandlerFactory {
 
-  ServletContextHandler createHandler(HandlerContainer parent);
+  ServletContextHandler createHandler(HandlerContainer parent, String contextPath);
 }
