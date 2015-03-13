@@ -34,11 +34,13 @@ import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.ReferenceConfigurationType;
 import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.ServiceRef;
+import org.everit.osgi.ecm.annotation.Update;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.component.JettyServerConstants;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
+import org.everit.osgi.jetty.server.component.ServletContextHandlerFactoryConstants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
@@ -47,8 +49,9 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * {@link ServletContextHandler} OSGi services. The component handles filter and servlet reference
  * changes dynamically.
  */
-@Component(componentId = "org.everit.osgi.jetty.server.component.ServletContextHandlerFactory",
-    configurationPolicy = ConfigurationPolicy.FACTORY)
+@Component(componentId = ServletContextHandlerFactoryConstants.FACTORY_PID,
+    configurationPolicy = ConfigurationPolicy.FACTORY,
+    localizationBase = "OSGI-INF/metatype/servlet")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @Service(ServletContextHandlerFactory.class)
@@ -75,9 +78,11 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
       Filter filter = serviceHolder.getService();
       Map<String, Object> attributes = serviceHolder.getAttributes();
 
-      String mapping = resolveMapping("filter", attributes);
+      String mapping = resolveMapping(ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS,
+          attributes);
 
-      EnumSet<DispatcherType> dispatcherTypes = resolveDispatcherTypes("filter", attributes);
+      EnumSet<DispatcherType> dispatcherTypes = resolveDispatcherTypes(
+          ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS, attributes);
 
       servletHandler.addFilter(new FilterHolder(filter), String.valueOf(mapping), dispatcherTypes);
 
@@ -99,7 +104,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   @Override
   public ServletContextHandler createHandler(final HandlerContainer parent,
       final String contextPath) {
-    ServletContextHandler servletContextHandler = new ServletContextHandler(parent, contextPath);
+    CustomServletHandler servletHandler = new CustomServletHandler();
+    ServletContextHandler servletContextHandler = new ServletContextHandler(parent,
+        contextPath, null, null, servletHandler, null, 0);
 
     addFiltersToHandler(servletContextHandler);
     addServletsToHandler(servletContextHandler);
@@ -165,5 +172,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   public void setSessionManager(final SessionManager sessionManager) {
     this.sessionManager = sessionManager;
+  }
+
+  @Update
+  public void update() {
+
   }
 }

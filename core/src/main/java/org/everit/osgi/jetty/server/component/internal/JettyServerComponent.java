@@ -29,6 +29,7 @@ import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.everit.osgi.ecm.annotation.Activate;
+import org.everit.osgi.ecm.annotation.AttributeOrder;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Deactivate;
@@ -53,12 +54,15 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 /**
  * ECM based configurable component that can start one or more Jetty {@link Server}s.
  */
-@Component(componentId = "org.everit.osgi.jetty.server.component.JettyServer",
+@Component(componentId = JettyServerConstants.FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     localizationBase = "OSGI-INF/metatype/jettyServer")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes(@StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true))
+@AttributeOrder({ JettyServerConstants.SERVICE_REF_NETWORK_CONNECTOR_FACTORIES + ".clause",
+    JettyServerConstants.SERVICE_REF_SERVLET_CONTEXT_HANDLER_FACTORIES + ".clause",
+    Constants.SERVICE_DESCRIPTION })
 public class JettyServerComponent {
 
   /**
@@ -363,7 +367,7 @@ public class JettyServerComponent {
   }
 
   @ServiceRef(referenceId = JettyServerConstants.SERVICE_REF_SERVLET_CONTEXT_HANDLER_FACTORIES,
-      configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
+      configurationType = ReferenceConfigurationType.CLAUSE, dynamic = true)
   public void setServletContextHandlerFactories(
       final ServiceHolder<ServletContextHandlerFactory>[] servletContextHandlerFactories) {
     updateServletContextHandlerFactories(servletContextHandlerFactories);

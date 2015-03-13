@@ -32,6 +32,8 @@ public final class JettyServerConstants {
 
   public static final String CONTEXT_CLAUSE_ATTR_CONTEXTPATH = "contextPath";
 
+  public static final String FACTORY_PID = "org.everit.osgi.jetty.server.component.JettyServer";
+
   public static final String SERVICE_REF_NETWORK_CONNECTOR_FACTORIES = "networkConnectorFactories";
 
   public static final String SERVICE_REF_SERVLET_CONTEXT_HANDLER_FACTORIES =

@@ -43,7 +43,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * ECM based configurable component that can set up and register {@link NetworkConnectorFactory}s.
  *
  */
-@Component(componentId = "org.everit.osgi.jetty.server.component.ServerConnectorFactory",
+@Component(componentId = ServerConnectorFactoryConstants.FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     localizationBase = "OSGI-INF/metatype/serverConnectorFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,

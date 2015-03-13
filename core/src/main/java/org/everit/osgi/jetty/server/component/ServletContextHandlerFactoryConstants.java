@@ -20,6 +20,11 @@ package org.everit.osgi.jetty.server.component;
  */
 public final class ServletContextHandlerFactoryConstants {
 
+  public static final String FACTORY_PID =
+      "org.everit.osgi.jetty.server.component.ServletContextHandlerFactory";
+
+  public static final String SERVICE_REF_FILTERS = "filters";
+
   private ServletContextHandlerFactoryConstants() {
   }
 }

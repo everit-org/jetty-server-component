@@ -30,6 +30,9 @@ public final class ServerConnectorFactoryConstants {
 
   public static final int DEFAULT_SELECTOR_PRIORITY_DELTA = 0;
 
+  public static final String FACTORY_PID =
+      "org.everit.osgi.jetty.server.component.ServerConnectorFactory";
+
   public static final String PROP_ACCEPT_QUEUE_SIZE = "acceptQueueSize";
 
   public static final String PROP_ACCEPTOR_PRIORITY_DELTA = "acceptorPriorityDelta";
