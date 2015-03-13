@@ -15,11 +15,15 @@
  */
 package org.everit.osgi.jetty.server.component;
 
-import org.eclipse.jetty.server.HandlerContainer;
-import org.eclipse.jetty.servlet.ServletContextHandler;
+/**
+ * Wraps exceptions that might occur during stopping Jetty server.
+ */
+public class JettyServerException extends RuntimeException {
 
-// TODO move to api project
-public interface ServletContextHandlerFactory {
+  private static final long serialVersionUID = 1418176965953860651L;
 
-  ServletContextHandler createHandler(HandlerContainer parent, String contextPath);
+  public JettyServerException(final Throwable cause) {
+    super(cause);
+  }
+
 }

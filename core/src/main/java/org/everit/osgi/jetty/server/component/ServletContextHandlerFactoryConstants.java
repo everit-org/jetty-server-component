@@ -15,11 +15,11 @@
  */
 package org.everit.osgi.jetty.server.component;
 
-import org.eclipse.jetty.server.HandlerContainer;
-import org.eclipse.jetty.servlet.ServletContextHandler;
+/**
+ * Constants that help the usage of ServletContextHandlerFactory component.
+ */
+public final class ServletContextHandlerFactoryConstants {
 
-// TODO move to api project
-public interface ServletContextHandlerFactory {
-
-  ServletContextHandler createHandler(HandlerContainer parent, String contextPath);
+  private ServletContextHandlerFactoryConstants() {
+  }
 }

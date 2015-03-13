@@ -15,6 +15,9 @@
  */
 package org.everit.osgi.jetty.server.component;
 
+/**
+ * Constants that help the usage of ServerConnectorFactory component.
+ */
 public final class ServerConnectorFactoryConstants {
 
   public static final long DEFAULT_IDLE_TIMEOUT = 30000;

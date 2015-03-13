@@ -17,6 +17,7 @@ package org.everit.osgi.jetty.server.component.internal;
 
 import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,7 +27,7 @@ import javax.annotation.Generated;
 
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
@@ -40,6 +41,7 @@ import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.component.JettyServerConstants;
+import org.everit.osgi.jetty.server.component.JettyServerException;
 import org.everit.osgi.jetty.server.component.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
 import org.osgi.framework.Constants;
@@ -70,7 +72,7 @@ public class JettyServerComponent {
 
     public final int port;
 
-    public ServiceReference<NetworkConnectorFactory> serviceReference;
+    public final ServiceReference<NetworkConnectorFactory> serviceReference;
 
     public ConnectorFactoryKey(final ServiceHolder<NetworkConnectorFactory> serviceHolder,
         final String host, final int port) {
@@ -134,9 +136,90 @@ public class JettyServerComponent {
 
   }
 
+  /**
+   * Container class that holds a context handler and the original context path that was used to
+   * create or update the handler.
+   *
+   */
+  private static class ContextWithPath {
+
+    public final String contextPath;
+
+    public final ServletContextHandler handler;
+
+    public ContextWithPath(final ServletContextHandler handler,
+        final String contextPath) {
+      this.handler = handler;
+      this.contextPath = contextPath;
+    }
+
+  }
+
+  /**
+   * Helper class to identify contexts with their settings in hash based collections.
+   */
+  private static class ServletContextFactoryKey {
+
+    public final String contextId;
+
+    public final ServiceReference<ServletContextHandlerFactory> serviceReference;
+
+    public ServletContextFactoryKey(
+        final ServiceHolder<ServletContextHandlerFactory> serviceHolder) {
+      this.serviceReference = serviceHolder.getReference();
+      this.contextId = serviceHolder.getReferenceId();
+    }
+
+    @Override
+    @Generated("eclipse")
+    public boolean equals(final Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (obj == null) {
+        return false;
+      }
+      if (getClass() != obj.getClass()) {
+        return false;
+      }
+      ServletContextFactoryKey other = (ServletContextFactoryKey) obj;
+      if (contextId == null) {
+        if (other.contextId != null) {
+          return false;
+        }
+      } else if (!contextId.equals(other.contextId)) {
+        return false;
+      }
+      if (serviceReference == null) {
+        if (other.serviceReference != null) {
+          return false;
+        }
+      } else if (!serviceReference.equals(other.serviceReference)) {
+        return false;
+      }
+      return true;
+    }
+
+    @Override
+    @Generated("eclipse")
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((contextId == null) ? 0 : contextId.hashCode());
+      result = prime * result + ((serviceReference == null) ? 0 : serviceReference.hashCode());
+      return result;
+    }
+
+  }
+
+  private CustomContextHandlerCollection contextHandlerCollection;
+
   private ServiceHolder<NetworkConnectorFactory>[] networkConnectorFactories;
 
   private final HashMap<ConnectorFactoryKey, NetworkConnector> registeredConnectors =
+      new HashMap<>();
+
+  private final HashMap<ServletContextFactoryKey, ContextWithPath> registeredServletContexts =
       new HashMap<>();
 
   private Server server;
@@ -151,13 +234,13 @@ public class JettyServerComponent {
   @Activate
   public void activate(final ComponentContext<JettyServerComponent> componentContext) {
     server = new Server();
-    ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
+    contextHandlerCollection = new CustomContextHandlerCollection();
 
     server.setHandler(contextHandlerCollection);
 
-    updateConnectorFactoriesOnServer(networkConnectorFactories);
+    updateConnectorFactoriesOnServer();
 
-    addServletContextsToServer(contextHandlerCollection);
+    updateServletContextHandlerFactoriesOnServer();
 
     Dictionary<String, Object> serviceProps = new Hashtable<String, Object>(
         componentContext.getProperties());
@@ -194,22 +277,6 @@ public class JettyServerComponent {
     }
   }
 
-  private void addServletContextsToServer(final ContextHandlerCollection contextHandlerCollection) {
-
-    for (ServiceHolder<ServletContextHandlerFactory> holder : servletContextHandlerFactories) {
-      Map<String, Object> attributes = holder.getAttributes();
-      Object contextPath = attributes.get(JettyServerConstants.CONTEXT_CLAUSE_ATTR_CONTEXTPATH);
-
-      if (contextPath == null) {
-        throw new ConfigurationException("'" + JettyServerConstants.CONTEXT_CLAUSE_ATTR_CONTEXTPATH
-            + "' attribute must be provided in clause of ServletContextHandlerFactory");
-      }
-
-      contextHandlerCollection.addHandler(holder.getService().createHandler(
-          contextHandlerCollection, String.valueOf(contextPath)));
-    }
-  }
-
   /**
    * Deactivate method that stops the server if it is running.
    */
@@ -224,8 +291,7 @@ public class JettyServerComponent {
         server.stop();
         server.destroy();
       } catch (Exception e) {
-        // TODO
-        throw new RuntimeException(e);
+        throw new JettyServerException(e);
       }
     }
 
@@ -242,20 +308,27 @@ public class JettyServerComponent {
   }
 
   private void fail(final Throwable e) {
-
-    if (server != null) {
-      try {
-        server.stop();
-        server.destroy();
-      } catch (Exception stopE) {
-        e.addSuppressed(stopE);
-      }
-      if (e instanceof RuntimeException) {
-        throw (RuntimeException) e;
-      }
-      // TODO
-      throw new RuntimeException(e);
+    try {
+      deactivate();
+    } catch (RuntimeException re) {
+      e.addSuppressed(re);
     }
+
+    if (e instanceof RuntimeException) {
+      throw (RuntimeException) e;
+    }
+    throw new JettyServerException(e);
+  }
+
+  private String resolveContextPath(final ServiceHolder<ServletContextHandlerFactory> holder) {
+    Map<String, Object> attributes = holder.getAttributes();
+    Object contextPath = attributes.get(JettyServerConstants.CONTEXT_CLAUSE_ATTR_CONTEXTPATH);
+
+    if (contextPath == null) {
+      throw new ConfigurationException("'" + JettyServerConstants.CONTEXT_CLAUSE_ATTR_CONTEXTPATH
+          + "' attribute must be provided in clause of ServletContextHandlerFactory");
+    }
+    return String.valueOf(contextPath);
   }
 
   private String resolveHostFromAttributes(final Map<String, Object> attributes) {
@@ -293,27 +366,25 @@ public class JettyServerComponent {
       configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
   public void setServletContextHandlerFactories(
       final ServiceHolder<ServletContextHandlerFactory>[] servletContextHandlerFactories) {
-    this.servletContextHandlerFactories = servletContextHandlerFactories;
+    updateServletContextHandlerFactories(servletContextHandlerFactories);
   }
 
   private synchronized void updateConnectorFactories(
       final ServiceHolder<NetworkConnectorFactory>[] pNetworkConnectorFactories) {
-    if (server == null) {
-      this.networkConnectorFactories = pNetworkConnectorFactories;
-    } else {
-      updateConnectorFactoriesOnServer(pNetworkConnectorFactories);
+    this.networkConnectorFactories = pNetworkConnectorFactories;
+    if (server != null) {
+      updateConnectorFactoriesOnServer();
     }
   }
 
-  private void updateConnectorFactoriesOnServer(
-      final ServiceHolder<NetworkConnectorFactory>[] newNetworkConnectorFactories) {
+  private void updateConnectorFactoriesOnServer() {
     @SuppressWarnings("unchecked")
     HashMap<ConnectorFactoryKey, NetworkConnector> connectorsToDelete =
         (HashMap<ConnectorFactoryKey, NetworkConnector>) registeredConnectors.clone();
 
     Map<ConnectorFactoryKey, NetworkConnectorFactory> newConnectors = new HashMap<>();
 
-    for (ServiceHolder<NetworkConnectorFactory> serviceHolder : newNetworkConnectorFactories) {
+    for (ServiceHolder<NetworkConnectorFactory> serviceHolder : networkConnectorFactories) {
       NetworkConnectorFactory connectorFactory = serviceHolder.getService();
       Map<String, Object> attributes = serviceHolder.getAttributes();
       String host = resolveHostFromAttributes(attributes);
@@ -333,5 +404,55 @@ public class JettyServerComponent {
 
     addNewConnectors(newConnectors);
 
+  }
+
+  private synchronized void updateServletContextHandlerFactories(
+      final ServiceHolder<ServletContextHandlerFactory>[] pServletContextHandlerFactories) {
+
+    this.servletContextHandlerFactories = pServletContextHandlerFactories;
+    if (contextHandlerCollection != null) {
+      updateServletContextHandlerFactoriesOnServer();
+    }
+  }
+
+  private void updateServletContextHandlerFactoriesOnServer() {
+    Set<ServletContextFactoryKey> unregisteredContexts = new HashSet<>(
+        registeredServletContexts.keySet());
+
+    ServletContextHandler[] newHandlers =
+        new ServletContextHandler[servletContextHandlerFactories.length];
+
+    contextHandlerCollection.setMapContextsCallIgnored(true);
+    for (int i = 0; i < servletContextHandlerFactories.length; i++) {
+      ServiceHolder<ServletContextHandlerFactory> holder = servletContextHandlerFactories[i];
+      String contextPath = resolveContextPath(holder);
+      ServletContextFactoryKey factoryKey = new ServletContextFactoryKey(holder);
+
+      ContextWithPath contextWithPath = registeredServletContexts.get(factoryKey);
+      if (contextWithPath != null) {
+        if (!contextPath.equals(contextWithPath.contextPath)) {
+          contextWithPath.handler.setContextPath(contextPath);
+          registeredServletContexts.put(factoryKey, new ContextWithPath(contextWithPath.handler,
+              contextPath));
+        }
+        unregisteredContexts.remove(factoryKey);
+        newHandlers[i] = contextWithPath.handler;
+      } else {
+        ServletContextHandler handler = holder.getService().createHandler(contextHandlerCollection,
+            contextPath);
+
+        newHandlers[i] = handler;
+        registeredServletContexts.put(factoryKey, new ContextWithPath(handler, contextPath));
+      }
+    }
+
+    // Remove handlers that are not in the new configuration
+    for (ServletContextFactoryKey key : unregisteredContexts) {
+      registeredServletContexts.remove(key);
+    }
+
+    // Set mapContext function back as setHandlers will call it
+    contextHandlerCollection.setMapContextsCallIgnored(true);
+    contextHandlerCollection.setHandlers(newHandlers);
   }
 }
