@@ -20,12 +20,6 @@ package org.everit.osgi.jetty.server.component;
  */
 public final class JettyServerConstants {
 
-  // TODO move to ServletContextHandlerFactoryConstants
-  public static final Object ATTR_DISPATCHER = "dispatcher";
-
-  // TODO move to ServletContextHandlerFactoryConstants
-  public static final String ATTR_MAPPING = "mapping";
-
   public static final String CONNECTOR_REF_CLAUSE_ATTR_HOST = "host";
 
   public static final String CONNECTOR_REF_CLAUSE_ATTR_PORT = "port";

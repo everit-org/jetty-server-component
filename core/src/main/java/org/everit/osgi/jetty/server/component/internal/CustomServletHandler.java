@@ -90,7 +90,9 @@ public class CustomServletHandler extends ServletHandler {
       setFilters(filterHolders);
       setFilterMappings(filterMappings);
       ignoreUpdateMapping = false;
-      updateMappings();
+      if (isStarted()) {
+        updateMappings();
+      }
     } finally {
       ignoreUpdateMapping = false;
       writeLock.unlock();

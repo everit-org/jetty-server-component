@@ -20,10 +20,36 @@ package org.everit.osgi.jetty.server.component;
  */
 public final class ServletContextHandlerFactoryConstants {
 
+  /**
+   * Constant values a that are used as or as part of multiple constants in
+   * {@link ServletContextHandlerFactoryConstants} class.
+   */
+  public static final class CommonConstants {
+
+    public static final String CLAUSE_ATTR_URL_PATTERN = "url-pattern";
+
+    private CommonConstants() {
+    }
+  }
+
+  public static final Object ATTR_DISPATCHER = "dispatcher";
+
   public static final String FACTORY_PID =
       "org.everit.osgi.jetty.server.component.ServletContextHandlerFactory";
 
+  public static final String FILTER_CLAUSE_ATTR_DISPATCHER = "dispatcher";
+
+  public static final String FILTER_CLAUSE_ATTR_SERVLET_NAME = "servlet-name";
+
+  public static final String FILTER_CLAUSE_ATTR_URL_PATTERN =
+      CommonConstants.CLAUSE_ATTR_URL_PATTERN;
+
   public static final String SERVICE_REF_FILTERS = "filters";
+
+  public static final String SERVICE_REF_SERVLETS = "servlets";
+
+  public static final String SERVLET_CLAUSE_ATTR_URL_PATTERN =
+      CommonConstants.CLAUSE_ATTR_URL_PATTERN;
 
   private ServletContextHandlerFactoryConstants() {
   }
