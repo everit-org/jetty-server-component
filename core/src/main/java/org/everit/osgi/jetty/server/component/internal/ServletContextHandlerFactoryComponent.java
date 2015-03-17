@@ -23,7 +23,6 @@ import java.util.WeakHashMap;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 
-import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.HandlerContainer;
 import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -33,15 +32,19 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.ServletMapping;
 import org.everit.osgi.ecm.annotation.Activate;
+import org.everit.osgi.ecm.annotation.AttributeOrder;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.ReferenceConfigurationType;
 import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.ServiceRef;
 import org.everit.osgi.ecm.annotation.Update;
+import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
+import org.everit.osgi.jetty.server.SecurityHandlerFactory;
+import org.everit.osgi.jetty.server.ServletContextHandlerFactory;
+import org.everit.osgi.jetty.server.SessionManagerFactory;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactoryConstants;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.FilterHolderManager;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.FilterMappingKey;
@@ -60,10 +63,17 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  */
 @Component(componentId = ServletContextHandlerFactoryConstants.FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
-    localizationBase = "OSGI-INF/metatype/servlet")
+    localizationBase = "OSGI-INF/metatype/servletContextHandlerFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @Service(ServletContextHandlerFactory.class)
+@AttributeOrder({
+    ServletContextHandlerFactoryConstants.SERVICE_REF_SERVLETS + ".clause",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS + ".clause",
+    ServletContextHandlerFactoryConstants.ATTR_SESSIONS,
+    ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_MANAGER_FACTORY + ".target",
+    ServletContextHandlerFactoryConstants.ATTR_SECURITY,
+    ServletContextHandlerFactoryConstants.SERVICE_REF_SECURITY_HANDLER_FACTORY + ".target" })
 public class ServletContextHandlerFactoryComponent implements ServletContextHandlerFactory {
 
   private final WeakHashMap<CustomServletHandler, Boolean> activeServletHandlers =
@@ -77,8 +87,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   private final FilterMappingManager filterMappingManager = new FilterMappingManager();
 
-  @ServiceRef(setter = "setSecurityHandler", optional = true)
-  private SecurityHandler securityHandler;
+  private boolean security = false;
+
+  private SecurityHandlerFactory securityHandlerFactory;
 
   private final ServletHolderManager servletHolderManager = new ServletHolderManager();
 
@@ -88,8 +99,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   private final ServletMappingManager servletMappingManager = new ServletMappingManager();
 
-  @ServiceRef(setter = "setSessionManager", optional = true)
-  private SessionManager sessionManager;
+  private SessionManagerFactory sessionManagerFactory;
+
+  private boolean sessions = true;
 
   @Activate
   public void activate() {
@@ -116,12 +128,22 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     CustomServletHandler servletHandler = new CustomServletHandler();
 
     SessionHandler sessionHandler = null;
-    if (sessionManager != null) {
-      sessionHandler = new SessionHandler(sessionManager);
+    if (sessionManagerFactory != null) {
+      sessionHandler = new SessionHandler();
+      SessionManager sessionManager = sessionManagerFactory.createSessionManager(sessionHandler);
+      sessionHandler.setSessionManager(sessionManager);
     }
 
+    int sessionsFlag = (sessions) ? ServletContextHandler.SESSIONS
+        : ServletContextHandler.NO_SESSIONS;
+
+    int securityFlag = (security) ? ServletContextHandler.SECURITY
+        : ServletContextHandler.NO_SECURITY;
+
+    int options = securityFlag | sessionsFlag;
+
     ServletContextHandler servletContextHandler = new ServletContextHandler(parent,
-        contextPath, sessionHandler, securityHandler, servletHandler, null, 0);
+        contextPath, sessionHandler, null, servletHandler, null, options);
 
     updateServletHandlerWithDynamicSettings(servletHandler);
 
@@ -158,28 +180,50 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     return result;
   }
 
-  @ServiceRef(attributeId = ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS,
+  @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
   public void setFilters(final ServiceHolder<Filter>[] filters) {
     filterKeys = resolveHolderKeys(filters);
     filterMappingKeys = resolveFilterMappingKeys(filters);
   }
 
-  public void setSecurityHandler(final SecurityHandler securityHandler) {
-    this.securityHandler = securityHandler;
+  @BooleanAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_SECURITY,
+      defaultValue = false)
+  public void setSecurity(final boolean security) {
+    this.security = security;
   }
 
-  @ServiceRef(attributeId = ServletContextHandlerFactoryConstants.SERVICE_REF_SERVLETS,
+  @ServiceRef(
+      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_SECURITY_HANDLER_FACTORY,
+      optional = true)
+  public void setSecurityHandlerFactory(final SecurityHandlerFactory securityHandlerFactory) {
+    this.securityHandlerFactory = securityHandlerFactory;
+  }
+
+  @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_SERVLETS,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
   public void setServlets(final ServiceHolder<Servlet>[] servlets) {
     servletKeys = resolveHolderKeys(servlets);
     servletMappingKeys = resolveServletMappingKeys(servlets);
   }
 
-  public void setSessionManager(final SessionManager sessionManager) {
-    this.sessionManager = sessionManager;
+  @ServiceRef(
+      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_MANAGER_FACTORY,
+      optional = true)
+  public void setSessionManagerFactory(final SessionManagerFactory sessionManagerFactory) {
+    this.sessionManagerFactory = sessionManagerFactory;
   }
 
+  @BooleanAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_SESSIONS,
+      defaultValue = true)
+  public void setSessions(final boolean sessions) {
+    this.sessions = sessions;
+  }
+
+  /**
+   * Updates the dynamic references (filters and servlets with their mappings) on all of the created
+   * and still used (the instances are referenced) {@link ServletContextHandler} instances.
+   */
   @Update
   public synchronized void update() {
 

@@ -94,7 +94,7 @@ public class FilterMappingKey extends MappingKey<Filter> {
       final Map<String, Object> clauseAttributes) {
     EnumSet<DispatcherType> dispatcherTypes;
     Object dispatcherAttr = clauseAttributes
-        .get(ServletContextHandlerFactoryConstants.ATTR_DISPATCHER);
+        .get(ServletContextHandlerFactoryConstants.FILTER_CLAUSE_ATTR_DISPATCHER);
 
     if (dispatcherAttr == null) {
       dispatcherTypes = EnumSet.noneOf(DispatcherType.class);

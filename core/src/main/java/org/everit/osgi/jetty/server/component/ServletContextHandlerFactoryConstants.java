@@ -32,7 +32,9 @@ public final class ServletContextHandlerFactoryConstants {
     }
   }
 
-  public static final Object ATTR_DISPATCHER = "dispatcher";
+  public static final String ATTR_SECURITY = "security";
+
+  public static final String ATTR_SESSIONS = "sessions";
 
   public static final String FACTORY_PID =
       "org.everit.osgi.jetty.server.component.ServletContextHandlerFactory";
@@ -46,7 +48,11 @@ public final class ServletContextHandlerFactoryConstants {
 
   public static final String SERVICE_REF_FILTERS = "filters";
 
+  public static final String SERVICE_REF_SECURITY_HANDLER_FACTORY = "securityHandlerFactory";
+
   public static final String SERVICE_REF_SERVLETS = "servlets";
+
+  public static final String SERVICE_REF_SESSION_MANAGER_FACTORY = "sessionManagerFactory";
 
   public static final String SERVLET_CLAUSE_ATTR_URL_PATTERN =
       CommonConstants.CLAUSE_ATTR_URL_PATTERN;

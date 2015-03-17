@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
-    <version>5.0.2</version>
+    <version>6.0.3</version>
   </parent>
 
   <groupId>org.everit.osgi</groupId>
@@ -78,48 +78,23 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.5.3</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Export-Package>org.everit.osgi.jetty.server.component</Export-Package>
+            <Import-Package>org.everit.osgi.jetty.server.component;version="[1.0,2)",*</Import-Package>
           </instructions>
         </configuration>
-      </plugin>
-      <plugin>
-        <inherited>true</inherited>
-        <groupId>com.mycila</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <aggregate>false</aggregate>
-          <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
-          <excludes>
-            <exclude>LICENSE</exclude>
-          </excludes>
-          <skipExistingHeaders>true</skipExistingHeaders>
-          <properties>
-            <owner>${project.organization.name}</owner>
-            <email>${project.organization.url}</email>
-          </properties>
-          <mapping>
-            <java>SLASHSTAR_STYLE</java>
-          </mapping>
-        </configuration>
-        <executions>
-          <execution>
-            <id>check-license</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
 
   <dependencies>
+    <dependency>
+      <groupId>org.everit.osgi</groupId>
+      <artifactId>org.everit.osgi.jetty.server.api</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+    </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>

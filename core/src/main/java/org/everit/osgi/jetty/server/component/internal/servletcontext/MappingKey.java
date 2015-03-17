@@ -95,7 +95,7 @@ public class MappingKey<T> {
       attributeValue = clauseAttributes.get(attributeName + ":List<String>");
     }
     if (attributeValue == null) {
-      return null;
+      return new String[0];
     }
     String concatenatedValue = String.valueOf(attributeValue);
     String[] split = concatenatedValue.split(",");

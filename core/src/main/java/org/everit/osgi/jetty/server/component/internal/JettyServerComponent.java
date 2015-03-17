@@ -41,10 +41,10 @@ import org.everit.osgi.ecm.component.ComponentContext;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.jetty.server.NetworkConnectorFactory;
+import org.everit.osgi.jetty.server.ServletContextHandlerFactory;
 import org.everit.osgi.jetty.server.component.JettyServerConstants;
 import org.everit.osgi.jetty.server.component.JettyServerException;
-import org.everit.osgi.jetty.server.component.NetworkConnectorFactory;
-import org.everit.osgi.jetty.server.component.ServletContextHandlerFactory;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
@@ -456,7 +456,7 @@ public class JettyServerComponent {
     }
 
     // Set mapContext function back as setHandlers will call it
-    contextHandlerCollection.setMapContextsCallIgnored(true);
+    contextHandlerCollection.setMapContextsCallIgnored(false);
     contextHandlerCollection.setHandlers(newHandlers);
   }
 }

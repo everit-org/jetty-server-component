@@ -25,7 +25,7 @@ public class ServletMappingManager extends
     ServletMapping servletMapping = new ServletMapping();
     servletMapping.setServletName(newKey.servletName);
     servletMapping.setPathSpecs(newKey.urlPatterns);
-    return null;
+    return servletMapping;
   }
 
   @Override

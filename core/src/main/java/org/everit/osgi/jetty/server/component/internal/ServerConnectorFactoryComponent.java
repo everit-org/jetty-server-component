@@ -34,7 +34,7 @@ import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.LongAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.component.NetworkConnectorFactory;
+import org.everit.osgi.jetty.server.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServerConnectorFactoryConstants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;

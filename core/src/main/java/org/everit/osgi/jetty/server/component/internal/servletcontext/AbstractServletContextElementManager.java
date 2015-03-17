@@ -34,7 +34,7 @@ public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
 
     for (int i = 0; i < newKeys.length; i++) {
       KEY newKey = newKeys[i];
-      if (previousElements.length == 0) {
+      if (previousElements == null || previousElements.length == 0) {
         // The length of previousElements can be zero if the ServletHandler is freshly created
         result[i] = createNewElement(newKey);
       } else {
