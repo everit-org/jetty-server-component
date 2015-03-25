@@ -19,6 +19,9 @@ import javax.servlet.Servlet;
 
 import org.eclipse.jetty.servlet.ServletHolder;
 
+/**
+ * Manager for servlet ServletContext component elements.
+ */
 public class ServletHolderManager extends
     AbstractServletContextElementManager<HolderKey<Servlet>, ServletHolder> {
 

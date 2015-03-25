@@ -17,6 +17,9 @@ package org.everit.osgi.jetty.server.component.internal.servletcontext;
 
 import org.eclipse.jetty.servlet.FilterMapping;
 
+/**
+ * Manager for FilterMapping ServletContext elements.
+ */
 public class FilterMappingManager extends
     AbstractServletContextElementManager<FilterMappingKey, FilterMapping> {
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011 Everit Kft. (http://www.everit.biz)
+    Copyright (C) 2011 Everit Kft. (http://www.everit.org)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.5.3</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
@@ -67,6 +66,7 @@
               <framework>felix</framework>
               <systemProperties>
                 <mvel2.disable.jit>true</mvel2.disable.jit>
+                <org.osgi.service.http.port>0</org.osgi.service.http.port>
                 <org.osgi.service.http.port.secure>$${ if (System.getenv("EOSGI_STOP_AFTER_TESTS").equals("true")) "0"; else "14848"; }</org.osgi.service.http.port.secure>
               </systemProperties>
               <vmOptions>
@@ -112,7 +112,7 @@
     <dependency>
       <groupId>org.everit.osgi</groupId>
       <artifactId>org.everit.osgi.ecm.extender.ri</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
     <dependency>
@@ -210,7 +210,7 @@
     <dependency>
       <groupId>org.everit.osgi</groupId>
       <artifactId>org.everit.osgi.ecm.component.webconsole</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.0</version>
     </dependency>
 
 

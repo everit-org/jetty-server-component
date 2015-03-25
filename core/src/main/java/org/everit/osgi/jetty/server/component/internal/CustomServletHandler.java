@@ -83,8 +83,8 @@ public class CustomServletHandler extends ServletHandler {
       final FilterMapping[] filterMappings) {
     WriteLock writeLock = readWriteLock.writeLock();
     writeLock.lock();
-    ignoreUpdateMapping = true;
     try {
+      ignoreUpdateMapping = true;
       setServlets(servletHolders);
       setServletMappings(servletMappings);
       setFilters(filterHolders);
@@ -94,8 +94,11 @@ public class CustomServletHandler extends ServletHandler {
         updateMappings();
       }
     } finally {
-      ignoreUpdateMapping = false;
-      writeLock.unlock();
+      try {
+        ignoreUpdateMapping = false;
+      } finally {
+        writeLock.unlock();
+      }
     }
   }
 }

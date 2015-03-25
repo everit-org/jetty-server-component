@@ -24,6 +24,12 @@ import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactoryConstants;
 import org.osgi.framework.ServiceReference;
 
+/**
+ * Superclass for FilterMappingKeys and ServletMappingKeys.
+ *
+ * @param <T>
+ *          The type that is mapped (servlet or filter).
+ */
 public class MappingKey<T> {
 
   public final T heldValue;
@@ -32,6 +38,12 @@ public class MappingKey<T> {
 
   public final String[] urlPatterns;
 
+  /**
+   * Constructor.
+   *
+   * @param serviceHolder
+   *          The serviceHolder that contains the relevant data.
+   */
   public MappingKey(final ServiceHolder<T> serviceHolder) {
     this.serviceReference = serviceHolder.getReference();
     this.heldValue = serviceHolder.getService();
@@ -87,6 +99,15 @@ public class MappingKey<T> {
     return result;
   }
 
+  /**
+   * Resolves the specified attribute even if it is specified with XXX:List<String> format.
+   *
+   * @param attributeName
+   *          The name of the attribute that is resolved from the clause.
+   * @param clauseAttributes
+   *          All attributes of the clause.
+   * @return The attribute value or if the value does not exist, an empty array.
+   */
   protected String[] resolveClausePotentialListAttribute(final String attributeName,
       final Map<String, Object> clauseAttributes) {
 

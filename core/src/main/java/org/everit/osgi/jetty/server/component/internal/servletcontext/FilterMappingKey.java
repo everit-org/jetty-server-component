@@ -27,6 +27,9 @@ import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactoryConstants;
 
+/**
+ * Key for FilterMappings.
+ */
 public class FilterMappingKey extends MappingKey<Filter> {
 
   public final EnumSet<DispatcherType> dispatcher;
@@ -35,6 +38,13 @@ public class FilterMappingKey extends MappingKey<Filter> {
 
   public final String[] servletNames;
 
+  /**
+   * Constructor that sets all necessary attributes based on the content of the
+   * {@link ServiceHolder}.
+   *
+   * @param serviceHolder
+   *          The ServiceHolder that contains the relevant information for this key.
+   */
   public FilterMappingKey(final ServiceHolder<Filter> serviceHolder) {
     super(serviceHolder);
     this.filterName = serviceHolder.getReferenceId();
@@ -42,8 +52,7 @@ public class FilterMappingKey extends MappingKey<Filter> {
     this.servletNames = resolveClausePotentialListAttribute(
         ServletContextHandlerFactoryConstants.FILTER_CLAUSE_ATTR_SERVLET_NAME, attributes);
 
-    this.dispatcher = resolveDispatcherTypes(
-        ServletContextHandlerFactoryConstants.FILTER_CLAUSE_ATTR_DISPATCHER, attributes);
+    this.dispatcher = resolveDispatcherTypes(attributes);
   }
 
   @Override
@@ -90,8 +99,9 @@ public class FilterMappingKey extends MappingKey<Filter> {
     return result;
   }
 
-  private EnumSet<DispatcherType> resolveDispatcherTypes(final String attributeName,
+  private EnumSet<DispatcherType> resolveDispatcherTypes(
       final Map<String, Object> clauseAttributes) {
+
     EnumSet<DispatcherType> dispatcherTypes;
     Object dispatcherAttr = clauseAttributes
         .get(ServletContextHandlerFactoryConstants.FILTER_CLAUSE_ATTR_DISPATCHER);

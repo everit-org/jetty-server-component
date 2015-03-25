@@ -171,7 +171,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
       ServerConnector serverConnector = providedServerConnectorIterator.next();
       serverConnector.setConnectionFactories(Arrays.asList(connectionFactories));
     }
-    this.connectionFactories = connectionFactories;
+    this.connectionFactories = connectionFactories.clone();
   }
 
   /**

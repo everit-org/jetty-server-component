@@ -17,6 +17,9 @@ package org.everit.osgi.jetty.server.component.internal.servletcontext;
 
 import org.eclipse.jetty.servlet.ServletMapping;
 
+/**
+ * Manager for servlet mapping keys.
+ */
 public class ServletMappingManager extends
     AbstractServletContextElementManager<ServletMappingKey, ServletMapping> {
 

@@ -19,6 +19,9 @@ import javax.servlet.Filter;
 
 import org.eclipse.jetty.servlet.FilterHolder;
 
+/**
+ * Manager for Filters in ServletContext component.
+ */
 public class FilterHolderManager extends
     AbstractServletContextElementManager<HolderKey<Filter>, FilterHolder> {
 

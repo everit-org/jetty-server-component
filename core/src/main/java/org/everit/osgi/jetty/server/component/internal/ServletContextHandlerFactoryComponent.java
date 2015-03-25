@@ -151,6 +151,11 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     return servletContextHandler;
   }
 
+  public SecurityHandlerFactory getSecurityHandlerFactory() {
+    // TODO remove when used
+    return securityHandlerFactory;
+  }
+
   private FilterMappingKey[] resolveFilterMappingKeys(final ServiceHolder<Filter>[] filters) {
     FilterMappingKey[] result = new FilterMappingKey[filters.length];
     for (int i = 0; i < filters.length; i++) {
@@ -182,7 +187,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
-  public void setFilters(final ServiceHolder<Filter>[] filters) {
+  public synchronized void setFilters(final ServiceHolder<Filter>[] filters) {
     filterKeys = resolveHolderKeys(filters);
     filterMappingKeys = resolveFilterMappingKeys(filters);
   }

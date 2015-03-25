@@ -17,6 +17,7 @@ package org.everit.osgi.jetty.server.component.internal.servletcontext;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Generated;
@@ -24,6 +25,12 @@ import javax.annotation.Generated;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.osgi.framework.ServiceReference;
 
+/**
+ * Keys for Filters and Servlets.
+ *
+ * @param <T>
+ *          The type of the holder.
+ */
 public class HolderKey<T> {
 
   private static final String INIT_PARAM_PREFIX = "init-";
@@ -38,6 +45,12 @@ public class HolderKey<T> {
 
   public final ServiceReference<T> serviceReference;
 
+  /**
+   * Constructor that sets all properties based on the content of serviceHolder.
+   *
+   * @param serviceHolder
+   *          The serviceHolder that contains all relevant attributes for this key.
+   */
   public HolderKey(final ServiceHolder<T> serviceHolder) {
     this.serviceReference = serviceHolder.getReference();
     this.name = serviceHolder.getReferenceId();
@@ -58,7 +71,8 @@ public class HolderKey<T> {
     if (getClass() != obj.getClass()) {
       return false;
     }
-    HolderKey other = (HolderKey) obj;
+    @SuppressWarnings("unchecked")
+    HolderKey<T> other = (HolderKey<T>) obj;
     if (asyncSupported != other.asyncSupported) {
       return false;
     }
@@ -117,12 +131,13 @@ public class HolderKey<T> {
 
   private Map<String, String> resolveInitParameters(final Map<String, Object> attributes) {
     Map<String, String> result = new HashMap<String, String>();
-    Set<String> attributeKeys = attributes.keySet();
-    for (String attributeKey : attributeKeys) {
+    Set<Entry<String, Object>> attributeEntries = attributes.entrySet();
+    for (Entry<String, Object> attributeEntry : attributeEntries) {
+      String attributeKey = attributeEntry.getKey();
       if (attributeKey.startsWith(INIT_PARAM_PREFIX)) {
         String initParamName = attributeKey.substring(INIT_PARAM_PREFIX.length());
 
-        Object attributeValue = attributes.get(attributeKey);
+        Object attributeValue = attributeEntry.getValue();
         String initParamValue = null;
         if (attributeValue != null) {
           initParamValue = String.valueOf(attributeValue);

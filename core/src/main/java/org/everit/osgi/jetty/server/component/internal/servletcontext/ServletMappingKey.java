@@ -20,6 +20,9 @@ import javax.servlet.Servlet;
 
 import org.everit.osgi.ecm.component.ServiceHolder;
 
+/**
+ * Mapping keys for servlets.
+ */
 public class ServletMappingKey extends MappingKey<Servlet> {
 
   public final String servletName;

@@ -19,6 +19,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Abstract manager class for ServletContext component.
+ *
+ * @param <KEY>
+ *          The type of the key of the ServletContext element. E.g.: ServletKey
+ * @param <ELEMENT>
+ *          The type of the ServletContext element. E.g.: Servlet
+ */
 public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
 
   private Map<KEY, Integer> previousKeysWithPosition = Collections.emptyMap();
@@ -27,6 +35,16 @@ public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
 
   protected abstract ELEMENT[] createNewElementArray(int length);
 
+  /**
+   * Generates a new Array for the new keys in the way that if there are keys from the old array,
+   * those elements are re-used.
+   *
+   * @param newKeys
+   *          The new key array.
+   * @param previousElements
+   *          The previous element array that was used by the ServletContext component.
+   * @return The new element array.
+   */
   public ELEMENT[] generateUpgradedElementArray(final KEY[] newKeys,
       final ELEMENT[] previousElements) {
 
@@ -50,6 +68,13 @@ public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
     return result;
   }
 
+  /**
+   * Updates the previous key array in the manager.
+   *
+   * @param keys
+   *          The keys that are getting that are currently used in the ServletContext component (so
+   *          next time they will be previous).
+   */
   public void updatePrviousKeys(final KEY[] keys) {
     Map<KEY, Integer> updated = new HashMap<>(keys.length);
     for (int i = 0; i < keys.length; i++) {
