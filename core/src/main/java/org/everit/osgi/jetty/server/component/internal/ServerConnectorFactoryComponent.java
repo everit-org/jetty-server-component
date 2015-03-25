@@ -33,9 +33,11 @@ import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
 import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.LongAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
+import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServerConnectorFactoryConstants;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
@@ -48,6 +50,8 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     localizationBase = "OSGI-INF/metatype/serverConnectorFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@StringAttributes({ @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION,
+    defaultValue = "Everit Jetty Connector Factory Component") })
 @AttributeOrder({ ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORIES + ".target",
     ServerConnectorFactoryConstants.PROP_IDLE_TIMEOUT,
     ServerConnectorFactoryConstants.PROP_NAME,
@@ -56,7 +60,9 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     ServerConnectorFactoryConstants.PROP_INHERIT_CHANNEL,
     ServerConnectorFactoryConstants.PROP_LINGER_TIME,
     ServerConnectorFactoryConstants.PROP_ACCEPTOR_PRIORITY_DELTA,
-    ServerConnectorFactoryConstants.PROP_SELECTOR_PRIORITY_DELTA, })
+    ServerConnectorFactoryConstants.PROP_SELECTOR_PRIORITY_DELTA,
+    ServerConnectorFactoryConstants.PROP_DEFAULT_PROTOCOL,
+    Constants.SERVICE_DESCRIPTION })
 @Service
 public class ServerConnectorFactoryComponent implements NetworkConnectorFactory {
 

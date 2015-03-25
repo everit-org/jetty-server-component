@@ -127,6 +127,8 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
       final String contextPath) {
     CustomServletHandler servletHandler = new CustomServletHandler();
 
+    servletHandler.setEnsureDefaultServlet(false);
+
     SessionHandler sessionHandler = null;
     if (sessionManagerFactory != null) {
       sessionHandler = new SessionHandler();

@@ -24,22 +24,24 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import org.everit.osgi.ecm.annotation.Component;
+import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
-import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
-@Component
+@Component(configurationPolicy = ConfigurationPolicy.FACTORY)
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
-@StringAttributes({ @StringAttribute(attributeId = "name", defaultValue = "helloworld") })
 @Service
 public class HelloWorldServlet implements Servlet {
 
+  private String name;
+
   @Override
   public void destroy() {
+    System.out.println("/////////// DESTROY CALLED: " + name);
   }
 
   @Override
@@ -55,15 +57,20 @@ public class HelloWorldServlet implements Servlet {
 
   @Override
   public void init(final ServletConfig config) throws ServletException {
-    System.out.println("///////////////// INIT CALLED");
+    System.out.println("///////////////// INIT CALLED: " + name);
   }
 
   @Override
   public void service(final ServletRequest req, final ServletResponse res) throws ServletException,
       IOException {
 
-    res.getWriter().write("HELLO WORLD!!!");
+    res.getWriter().write("Hello " + name + "!");
 
+  }
+
+  @StringAttribute(defaultValue = "World", dynamic = true)
+  public void setName(final String name) {
+    this.name = name;
   }
 
 }

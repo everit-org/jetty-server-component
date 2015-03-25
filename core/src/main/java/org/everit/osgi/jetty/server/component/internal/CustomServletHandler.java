@@ -74,6 +74,13 @@ public class CustomServletHandler extends ServletHandler {
     }
   }
 
+  @Override
+  protected synchronized void updateNameMappings() {
+    if (!ignoreUpdateMapping) {
+      super.updateNameMappings();
+    }
+  }
+
   /**
    * Updates servlets and filters with their mappings atomically. No requests are processed during
    * the update process so no request will fail due to inconsistent state.
@@ -88,9 +95,19 @@ public class CustomServletHandler extends ServletHandler {
       setServlets(servletHolders);
       setServletMappings(servletMappings);
       setFilters(filterHolders);
+
+      if (isStarted()) {
+        for (ServletHolder servletHolder : servletHolders) {
+          manage(servletHolder);
+        }
+        for (FilterHolder filterHolder : filterHolders) {
+          manage(filterHolder);
+        }
+      }
       setFilterMappings(filterMappings);
       ignoreUpdateMapping = false;
       if (isStarted()) {
+        updateNameMappings();
         updateMappings();
       }
     } finally {
