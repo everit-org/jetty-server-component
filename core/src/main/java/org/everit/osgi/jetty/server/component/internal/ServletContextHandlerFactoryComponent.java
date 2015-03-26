@@ -23,8 +23,10 @@ import java.util.WeakHashMap;
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
 
+import org.eclipse.jetty.http.MimeTypes;
+import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.HandlerContainer;
-import org.eclipse.jetty.server.SessionManager;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
@@ -38,13 +40,18 @@ import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.ReferenceConfigurationType;
 import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.ServiceRef;
+import org.everit.osgi.ecm.annotation.ThreeStateBoolean;
 import org.everit.osgi.ecm.annotation.Update;
 import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
+import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
+import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
+import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ServiceHolder;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.jetty.server.ErrorHandlerFactory;
 import org.everit.osgi.jetty.server.SecurityHandlerFactory;
 import org.everit.osgi.jetty.server.ServletContextHandlerFactory;
-import org.everit.osgi.jetty.server.SessionManagerFactory;
+import org.everit.osgi.jetty.server.SessionHandlerFactory;
 import org.everit.osgi.jetty.server.component.ServletContextHandlerFactoryConstants;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.FilterHolderManager;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.FilterMappingKey;
@@ -53,6 +60,7 @@ import org.everit.osgi.jetty.server.component.internal.servletcontext.HolderKey;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.ServletHolderManager;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.ServletMappingKey;
 import org.everit.osgi.jetty.server.component.internal.servletcontext.ServletMappingManager;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
@@ -61,23 +69,32 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * {@link ServletContextHandler} OSGi services. The component handles filter and servlet reference
  * changes dynamically.
  */
+@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
+    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @Component(componentId = ServletContextHandlerFactoryConstants.FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     localizationBase = "OSGI-INF/metatype/servletContextHandlerFactory")
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@StringAttributes(@StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true))
 @Service(ServletContextHandlerFactory.class)
 @AttributeOrder({
+    ServletContextHandlerFactoryConstants.ATTR_VIRTUAL_HOSTS,
     ServletContextHandlerFactoryConstants.SERVICE_REF_SERVLETS + ".clause",
     ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS + ".clause",
     ServletContextHandlerFactoryConstants.ATTR_SESSIONS,
-    ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_MANAGER_FACTORY + ".target",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_HANDLER_FACTORY + ".target",
     ServletContextHandlerFactoryConstants.ATTR_SECURITY,
-    ServletContextHandlerFactoryConstants.SERVICE_REF_SECURITY_HANDLER_FACTORY + ".target" })
+    ServletContextHandlerFactoryConstants.SERVICE_REF_SECURITY_HANDLER_FACTORY + ".target",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_ERROR_HANDLER_FACTORY + ".target",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_MIMETYPES + ".target",
+    ServletContextHandlerFactoryConstants.ATTR_MAX_FORM_CONTENT_SIZE,
+    ServletContextHandlerFactoryConstants.ATTR_MAX_FORM_KEYS,
+    Constants.SERVICE_DESCRIPTION })
 public class ServletContextHandlerFactoryComponent implements ServletContextHandlerFactory {
 
-  private final WeakHashMap<CustomServletHandler, Boolean> activeServletHandlers =
+  private final WeakHashMap<ServletContextHandler, Boolean> activeServletContextHandlers =
       new WeakHashMap<>();
+
+  private ErrorHandlerFactory errorHandlerFactory;
 
   private final FilterHolderManager filterHolderManager = new FilterHolderManager();
 
@@ -86,6 +103,12 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   private FilterMappingKey[] filterMappingKeys;
 
   private final FilterMappingManager filterMappingManager = new FilterMappingManager();
+
+  private int maxFormContentSize;
+
+  private int maxFormKeys;
+
+  private MimeTypes mimeTypes;
 
   private boolean security = false;
 
@@ -99,9 +122,11 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   private final ServletMappingManager servletMappingManager = new ServletMappingManager();
 
-  private SessionManagerFactory sessionManagerFactory;
+  private SessionHandlerFactory sessionHandlerFactory;
 
   private boolean sessions = true;
+
+  private String[] virtualHosts;
 
   @Activate
   public void activate() {
@@ -109,12 +134,12 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     filterHolderManager.updatePrviousKeys(filterKeys);
   }
 
-  private Set<CustomServletHandler> cloneActiveServletHandlerSet() {
-    Set<CustomServletHandler> result = null;
+  private Set<ServletContextHandler> cloneActiveServletContextHandlerSet() {
+    Set<ServletContextHandler> result = null;
     while (result == null) {
-      Set<CustomServletHandler> keySet = activeServletHandlers.keySet();
+      Set<ServletContextHandler> keySet = activeServletContextHandlers.keySet();
       try {
-        result = new HashSet<CustomServletHandler>(keySet);
+        result = new HashSet<ServletContextHandler>(keySet);
       } catch (ConcurrentModificationException e) {
         // Do nothing
       }
@@ -129,12 +154,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
     servletHandler.setEnsureDefaultServlet(false);
 
-    SessionHandler sessionHandler = null;
-    if (sessionManagerFactory != null) {
-      sessionHandler = new SessionHandler();
-      SessionManager sessionManager = sessionManagerFactory.createSessionManager(sessionHandler);
-      sessionHandler.setSessionManager(sessionManager);
-    }
+    SessionHandler sessionHandler = resolveSessionHandler();
+    SecurityHandler securityHandler = resolveSecurityHandler();
+    ErrorHandler errorHandler = resolveErrorHandler();
 
     int sessionsFlag = (sessions) ? ServletContextHandler.SESSIONS
         : ServletContextHandler.NO_SESSIONS;
@@ -145,17 +167,26 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     int options = securityFlag | sessionsFlag;
 
     ServletContextHandler servletContextHandler = new ServletContextHandler(parent,
-        contextPath, sessionHandler, null, servletHandler, null, options);
+        contextPath, sessionHandler, securityHandler, servletHandler, errorHandler, options);
 
     updateServletHandlerWithDynamicSettings(servletHandler);
 
-    activeServletHandlers.put(servletHandler, Boolean.TRUE);
+    servletContextHandler.setMaxFormContentSize(maxFormContentSize);
+    servletContextHandler.setMaxFormKeys(maxFormKeys);
+    setMimeTypesOnServletContextHandler(servletContextHandler);
+    servletContextHandler.setVirtualHosts(virtualHosts);
+
+    activeServletContextHandlers.put(servletContextHandler, Boolean.TRUE);
+
     return servletContextHandler;
   }
 
-  public SecurityHandlerFactory getSecurityHandlerFactory() {
-    // TODO remove when used
-    return securityHandlerFactory;
+  private ErrorHandler resolveErrorHandler() {
+    ErrorHandler errorHandler = null;
+    if (errorHandlerFactory != null) {
+      errorHandler = errorHandlerFactory.createErrorHandler();
+    }
+    return errorHandler;
   }
 
   private FilterMappingKey[] resolveFilterMappingKeys(final ServiceHolder<Filter>[] filters) {
@@ -178,6 +209,14 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     return result;
   }
 
+  private SecurityHandler resolveSecurityHandler() {
+    SecurityHandler securityHandler = null;
+    if (securityHandlerFactory != null) {
+      securityHandler = securityHandlerFactory.createSecurityHandler();
+    }
+    return securityHandler;
+  }
+
   private ServletMappingKey[] resolveServletMappingKeys(final ServiceHolder<Servlet>[] servlets) {
     ServletMappingKey[] result = new ServletMappingKey[servlets.length];
     for (int i = 0; i < servlets.length; i++) {
@@ -187,11 +226,55 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     return result;
   }
 
+  private SessionHandler resolveSessionHandler() {
+    SessionHandler sessionHandler = null;
+    if (sessionHandlerFactory != null) {
+      sessionHandler = sessionHandlerFactory.createSessionHandler();
+    }
+    return sessionHandler;
+  }
+
+  @ServiceRef(
+      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_ERROR_HANDLER_FACTORY,
+      optional = true)
+  public void setErrorHandlerFactory(final ErrorHandlerFactory errorHandlerFactory) {
+    this.errorHandlerFactory = errorHandlerFactory;
+  }
+
   @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = true, dynamic = true)
   public synchronized void setFilters(final ServiceHolder<Filter>[] filters) {
     filterKeys = resolveHolderKeys(filters);
     filterMappingKeys = resolveFilterMappingKeys(filters);
+  }
+
+  @IntegerAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_MAX_FORM_CONTENT_SIZE,
+      defaultValue = -1)
+  public void setMaxFormContentSize(final int maxFormContentSize) {
+    updateMaxFormContentSize(maxFormContentSize);
+  }
+
+  @IntegerAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_MAX_FORM_KEYS,
+      defaultValue = -1)
+  public void setMaxFormKeys(final int maxFormKeys) {
+    updateMaxFormKeys(maxFormKeys);
+  }
+
+  @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_MIMETYPES,
+      optional = true)
+  public void setMimeTypes(final MimeTypes mimeTypes) {
+    updateMimeTypes(mimeTypes);
+  }
+
+  private void setMimeTypesOnServletContextHandler(
+      final ServletContextHandler servletContextHandler) {
+
+    if (mimeTypes == null) {
+      servletContextHandler.setMimeTypes(new MimeTypes());
+    } else {
+      servletContextHandler.setMimeTypes(mimeTypes);
+    }
+
   }
 
   @BooleanAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_SECURITY,
@@ -215,16 +298,22 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   }
 
   @ServiceRef(
-      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_MANAGER_FACTORY,
+      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_HANDLER_FACTORY,
       optional = true)
-  public void setSessionManagerFactory(final SessionManagerFactory sessionManagerFactory) {
-    this.sessionManagerFactory = sessionManagerFactory;
+  public void setSessionHandlerFactory(final SessionHandlerFactory sessionHandlerFactory) {
+    this.sessionHandlerFactory = sessionHandlerFactory;
   }
 
   @BooleanAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_SESSIONS,
       defaultValue = true)
   public void setSessions(final boolean sessions) {
     this.sessions = sessions;
+  }
+
+  @StringAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_VIRTUAL_HOSTS,
+      optional = true, multiple = ThreeStateBoolean.TRUE)
+  public void setVirtualHosts(final String[] virtualHosts) {
+    updateVirtualHosts(virtualHosts);
   }
 
   /**
@@ -234,14 +323,41 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   @Update
   public synchronized void update() {
 
-    Set<CustomServletHandler> clonedActiveServletHandlers = cloneActiveServletHandlerSet();
-    for (CustomServletHandler servletHandler : clonedActiveServletHandlers) {
-      updateServletHandlerWithDynamicSettings(servletHandler);
+    Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
+    for (ServletContextHandler servletContextHandler : servletContextHandlers) {
+      updateServletHandlerWithDynamicSettings((CustomServletHandler) servletContextHandler
+          .getServletHandler());
     }
     servletHolderManager.updatePrviousKeys(servletKeys);
     servletMappingManager.updatePrviousKeys(servletMappingKeys);
     filterHolderManager.updatePrviousKeys(filterKeys);
     filterMappingManager.updatePrviousKeys(filterMappingKeys);
+  }
+
+  private void updateMaxFormContentSize(final int pMaxFormContentSize) {
+    this.maxFormContentSize = pMaxFormContentSize;
+    Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
+    for (ServletContextHandler servletContextHandler : servletContextHandlers) {
+      servletContextHandler.setMaxFormContentSize(pMaxFormContentSize);
+    }
+
+  }
+
+  private void updateMaxFormKeys(final int pMaxFormKeys) {
+    this.maxFormKeys = pMaxFormKeys;
+    Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
+    for (ServletContextHandler servletContextHandler : servletContextHandlers) {
+      servletContextHandler.setMaxFormKeys(pMaxFormKeys);
+    }
+
+  }
+
+  private void updateMimeTypes(final MimeTypes pMimeTypes) {
+    this.mimeTypes = pMimeTypes;
+    Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
+    for (ServletContextHandler servletContextHandler : servletContextHandlers) {
+      setMimeTypesOnServletContextHandler(servletContextHandler);
+    }
   }
 
   private void updateServletHandlerWithDynamicSettings(final CustomServletHandler servletHandler) {
@@ -260,5 +376,13 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
     servletHandler.updateServletsAndFilters(servletHolders, servletMappings, filterHolders,
         filterMappings);
+  }
+
+  private void updateVirtualHosts(final String[] pVirtualHosts) {
+    this.virtualHosts = pVirtualHosts;
+    Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
+    for (ServletContextHandler servletContextHandler : servletContextHandlers) {
+      servletContextHandler.setVirtualHosts(virtualHosts);
+    }
   }
 }

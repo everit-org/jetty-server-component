@@ -51,7 +51,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({ @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION,
-    defaultValue = "Everit Jetty Connector Factory Component") })
+    optional = true) })
 @AttributeOrder({ ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORIES + ".target",
     ServerConnectorFactoryConstants.PROP_IDLE_TIMEOUT,
     ServerConnectorFactoryConstants.PROP_NAME,

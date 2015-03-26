@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Generated;
-import javax.management.RuntimeErrorException;
 
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
@@ -273,6 +272,7 @@ public class JettyServerComponent {
       if (server.isStarted() && !connector.isStarted()) {
         try {
           connector.start();
+          server.manage(connector);
         } catch (Exception e) {
           fail(e);
           return;
@@ -291,7 +291,7 @@ public class JettyServerComponent {
       serviceRegistration.unregister();
     }
 
-    if (server != null) {
+    if (server != null && !server.isStopped()) {
       try {
         server.stop();
         server.destroy();
@@ -360,6 +360,20 @@ public class JettyServerComponent {
     }
   }
 
+  private void setAndManageNewHandlers(final ServletContextHandler[] newHandlers) {
+    contextHandlerCollection.setHandlers(newHandlers);
+    for (ServletContextHandler newHandler : newHandlers) {
+      if (!newHandler.isStarted() && server.isStarted()) {
+        try {
+          newHandler.start();
+          contextHandlerCollection.manage(newHandler);
+        } catch (Exception e) {
+          throw new JettyServerException(e);
+        }
+      }
+    }
+  }
+
   @ServiceRef(referenceId = JettyServerConstants.SERVICE_REF_NETWORK_CONNECTOR_FACTORIES,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true)
   public void setNetworkConnectorFactories(
@@ -378,16 +392,7 @@ public class JettyServerComponent {
       final ServiceHolder<NetworkConnectorFactory>[] pNetworkConnectorFactories) {
     this.networkConnectorFactories = pNetworkConnectorFactories;
     if (server != null) {
-      try {
-        updateConnectorFactoriesOnServer();
-      } catch (RuntimeException e) {
-        try {
-          deactivate();
-        } catch (RuntimeErrorException se) {
-          e.addSuppressed(se);
-        }
-        throw e;
-      }
+      updateConnectorFactoriesOnServer();
     }
   }
 
@@ -422,23 +427,9 @@ public class JettyServerComponent {
 
   private void updateServletContextAndHandleFailure(
       final ServiceHolder<ServletContextHandlerFactory>[] pServletContextHandlerFactories) {
-    try {
-      updateServletContextHandlerFactories(pServletContextHandlerFactories);
-    } catch (RuntimeException e) {
-      try {
-        deactivate();
-      } catch (RuntimeException se) {
-        e.addSuppressed(se);
-      }
-      throw e;
-    }
-  }
-
-  private synchronized void updateServletContextHandlerFactories(
-      final ServiceHolder<ServletContextHandlerFactory>[] pServletContextHandlerFactories) {
 
     this.servletContextHandlerFactories = pServletContextHandlerFactories;
-    if (contextHandlerCollection != null) {
+    if (server != null) {
       updateServletContextHandlerFactoriesOnServer();
     }
   }
@@ -481,6 +472,6 @@ public class JettyServerComponent {
 
     // Set mapContext function back as setHandlers will call it
     contextHandlerCollection.setMapContextsCallIgnored(false);
-    contextHandlerCollection.setHandlers(newHandlers);
+    setAndManageNewHandlers(newHandlers);
   }
 }
