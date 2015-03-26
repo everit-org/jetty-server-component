@@ -51,7 +51,8 @@ public final class ServerConnectorFactoryConstants {
 
   public static final String PROP_SELECTOR_PRIORITY_DELTA = "selectorPriorityDelta";
 
-  public static final String SERVICE_REF_CONNECTION_FACTORIES = "connectionFactories";
+  public static final String SERVICE_REF_CONNECTION_FACTORY_FACTORIES =
+      "connectionFactoryFactories";
 
   private ServerConnectorFactoryConstants() {
   }

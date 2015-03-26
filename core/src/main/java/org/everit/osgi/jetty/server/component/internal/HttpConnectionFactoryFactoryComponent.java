@@ -15,20 +15,16 @@
  */
 package org.everit.osgi.jetty.server.component.internal;
 
-import java.util.Dictionary;
-import java.util.Hashtable;
-
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
-import org.everit.osgi.ecm.annotation.Deactivate;
+import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
-import org.everit.osgi.ecm.component.ComponentContext;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.osgi.framework.ServiceRegistration;
+import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
+import org.everit.osgi.jetty.server.component.HttpConnectionFactoryConstants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
@@ -36,44 +32,29 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * ECM based configurable component that can start one or more {@link HttpConnectionFactory}s and
  * register them as OSGi services.
  */
-@Component(componentId = "org.everit.osgi.jetty.server.component.HttpConnectionFactory",
-    configurationPolicy = ConfigurationPolicy.FACTORY)
+@Component(componentId = HttpConnectionFactoryConstants.FACTORY_PID,
+    configurationPolicy = ConfigurationPolicy.FACTORY,
+    localizationBase = "OSGI-INF/metatype/httpConnectionFactoryFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
-public class HttpConnectionFactoryComponent {
+@Service
+public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryFactory {
 
   @BooleanAttribute(setter = "setDelayDispatchUntilContent", defaultValue = false)
   private boolean delayDispatchUntilContent = false;
 
-  private ServiceRegistration<ConnectionFactory> serviceRegistration;
-
-  /**
-   * Activate method that sets up and registers the instantiated connection factory as an OSGi
-   * service.
-   */
-  @Activate
-  public void activate(final ComponentContext<HttpConnectionFactoryComponent> componentContext) {
+  @Override
+  public ConnectionFactory createConnectionFactory() {
     HttpConfiguration httpConfiguration = new HttpConfiguration();
 
     httpConfiguration.setDelayDispatchUntilContent(delayDispatchUntilContent);
     HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
 
-    Dictionary<String, Object> properties = new Hashtable<String, Object>(
-        componentContext.getProperties());
-
-    serviceRegistration = componentContext.registerService(
-        ConnectionFactory.class, httpConnectionFactory, properties);
-  }
-
-  /**
-   * The deactivate method unregisters the {@link ConnectionFactory} OSGi service.
-   */
-  @Deactivate
-  public void deactivate() {
-    serviceRegistration.unregister();
+    return httpConnectionFactory;
   }
 
   public void setDelayDispatchUntilContent(final boolean delayDispatchUntilContent) {
+    // TODO apply to all created connection factories
     this.delayDispatchUntilContent = delayDispatchUntilContent;
   }
 }

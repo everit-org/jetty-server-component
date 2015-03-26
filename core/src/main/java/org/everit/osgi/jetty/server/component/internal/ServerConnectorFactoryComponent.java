@@ -15,10 +15,12 @@
  */
 package org.everit.osgi.jetty.server.component.internal;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.WeakHashMap;
 
 import org.eclipse.jetty.server.ConnectionFactory;
@@ -35,6 +37,7 @@ import org.everit.osgi.ecm.annotation.attribute.LongAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
 import org.everit.osgi.jetty.server.NetworkConnectorFactory;
 import org.everit.osgi.jetty.server.component.ServerConnectorFactoryConstants;
 import org.osgi.framework.Constants;
@@ -52,7 +55,8 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({ @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION,
     optional = true) })
-@AttributeOrder({ ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORIES + ".target",
+@AttributeOrder({
+    ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORY_FACTORIES + ".target",
     ServerConnectorFactoryConstants.PROP_IDLE_TIMEOUT,
     ServerConnectorFactoryConstants.PROP_NAME,
     ServerConnectorFactoryConstants.PROP_REUSE_ADDRESS,
@@ -70,7 +74,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private int acceptQueueSize;
 
-  private ConnectionFactory[] connectionFactories;
+  private ConnectionFactoryFactory[] connectionFactoryFactories;
 
   private String defaultProtocol;
 
@@ -92,8 +96,11 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   private void applyDefaultProtocolOnServerConnector(final ServerConnector result) {
     if (defaultProtocol != null) {
       result.setDefaultProtocol(defaultProtocol);
-    } else if (connectionFactories.length > 0) {
-      result.setDefaultProtocol(connectionFactories[0].getProtocol());
+    } else {
+      Collection<ConnectionFactory> connectionFactories = result.getConnectionFactories();
+      if (connectionFactories.size() > 0) {
+        result.setDefaultProtocol(connectionFactories.iterator().next().getProtocol());
+      }
     }
   }
 
@@ -104,7 +111,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     ServerConnector result = new ServerConnector(server);
 
     // TODO Validate if there are multiple connection factories with the same protocol
-    result.setConnectionFactories(Arrays.asList(connectionFactories));
+    result.setConnectionFactories(generateConnectionFactories());
     result.setAcceptorPriorityDelta(acceptorPriorityDelta);
     result.setAcceptQueueSize(acceptQueueSize);
     result.setIdleTimeout(idleTimeout);
@@ -119,6 +126,14 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     result.setHost(host);
     result.setPort(port);
     putIntoProvidedConnectors(result);
+    return result;
+  }
+
+  private Collection<ConnectionFactory> generateConnectionFactories() {
+    List<ConnectionFactory> result = new ArrayList<ConnectionFactory>();
+    for (ConnectionFactoryFactory connectionFactoryFactory : connectionFactoryFactories) {
+      result.add(connectionFactoryFactory.createConnectionFactory());
+    }
     return result;
   }
 
@@ -169,15 +184,20 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   /**
    * Setter that also updates the property on the connector without restarting it.
    */
-  @ServiceRef(referenceId = ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORIES,
+  @ServiceRef(
+      referenceId = ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORY_FACTORIES,
       dynamic = true)
-  public synchronized void setConnectionFactories(final ConnectionFactory[] connectionFactories) {
+  public synchronized void setConnectionFactoryFactories(
+      final ConnectionFactoryFactory[] connectionFactoryFactories) {
+
+    this.connectionFactoryFactories = connectionFactoryFactories.clone();
+
     Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
     while (providedServerConnectorIterator.hasNext()) {
       ServerConnector serverConnector = providedServerConnectorIterator.next();
-      serverConnector.setConnectionFactories(Arrays.asList(connectionFactories));
+
+      serverConnector.setConnectionFactories(generateConnectionFactories());
     }
-    this.connectionFactories = connectionFactories.clone();
   }
 
   /**
@@ -189,7 +209,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
     while (providedServerConnectorIterator.hasNext()) {
       ServerConnector serverConnector = providedServerConnectorIterator.next();
-      serverConnector.setDefaultProtocol(defaultProtocol);
+      applyDefaultProtocolOnServerConnector(serverConnector);
     }
     this.defaultProtocol = defaultProtocol;
   }
