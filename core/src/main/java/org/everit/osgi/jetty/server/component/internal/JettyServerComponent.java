@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Generated;
+import javax.management.RuntimeErrorException;
 
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
@@ -370,14 +371,23 @@ public class JettyServerComponent {
       configurationType = ReferenceConfigurationType.CLAUSE, dynamic = true)
   public void setServletContextHandlerFactories(
       final ServiceHolder<ServletContextHandlerFactory>[] servletContextHandlerFactories) {
-    updateServletContextHandlerFactories(servletContextHandlerFactories);
+    updateServletContextAndHandleFailure(servletContextHandlerFactories);
   }
 
   private synchronized void updateConnectorFactories(
       final ServiceHolder<NetworkConnectorFactory>[] pNetworkConnectorFactories) {
     this.networkConnectorFactories = pNetworkConnectorFactories;
     if (server != null) {
-      updateConnectorFactoriesOnServer();
+      try {
+        updateConnectorFactoriesOnServer();
+      } catch (RuntimeException e) {
+        try {
+          deactivate();
+        } catch (RuntimeErrorException se) {
+          e.addSuppressed(se);
+        }
+        throw e;
+      }
     }
   }
 
@@ -408,6 +418,20 @@ public class JettyServerComponent {
 
     addNewConnectors(newConnectors);
 
+  }
+
+  private void updateServletContextAndHandleFailure(
+      final ServiceHolder<ServletContextHandlerFactory>[] pServletContextHandlerFactories) {
+    try {
+      updateServletContextHandlerFactories(pServletContextHandlerFactories);
+    } catch (RuntimeException e) {
+      try {
+        deactivate();
+      } catch (RuntimeException se) {
+        e.addSuppressed(se);
+      }
+      throw e;
+    }
   }
 
   private synchronized void updateServletContextHandlerFactories(
