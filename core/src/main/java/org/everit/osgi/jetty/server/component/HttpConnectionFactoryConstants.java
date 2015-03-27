@@ -20,8 +20,16 @@ package org.everit.osgi.jetty.server.component;
  */
 public final class HttpConnectionFactoryConstants {
 
+  public static final String ATTR_DELAY_DISPATCH_UNTIL_CONTENT = "delayDispatchUntilContent";
+
+  public static final String ATTR_INPUT_BUFFER_SIZE = "inputBufferSize";
+
+  public static final int DEFAULT_INPUT_BUFFER_SIZE = 8192;
+
   public static final String FACTORY_PID =
       "org.everit.osgi.jetty.server.component.HttpConnectionFactoryFactory";
+
+  public static final String SERVICE_REF_CUSTOMIZERS = "customizers";
 
   private HttpConnectionFactoryConstants() {
   }

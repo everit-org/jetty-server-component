@@ -37,8 +37,6 @@ public final class ServerConnectorFactoryConstants {
 
   public static final String PROP_ACCEPTOR_PRIORITY_DELTA = "acceptorPriorityDelta";
 
-  public static final String PROP_DEFAULT_PROTOCOL = "defaultProtocol";
-
   public static final String PROP_IDLE_TIMEOUT = "idleTimeout";
 
   public static final String PROP_INHERIT_CHANNEL = "inheritChannel";

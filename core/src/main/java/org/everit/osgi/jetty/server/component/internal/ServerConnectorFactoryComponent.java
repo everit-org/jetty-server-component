@@ -65,7 +65,6 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     ServerConnectorFactoryConstants.PROP_LINGER_TIME,
     ServerConnectorFactoryConstants.PROP_ACCEPTOR_PRIORITY_DELTA,
     ServerConnectorFactoryConstants.PROP_SELECTOR_PRIORITY_DELTA,
-    ServerConnectorFactoryConstants.PROP_DEFAULT_PROTOCOL,
     Constants.SERVICE_DESCRIPTION })
 @Service
 public class ServerConnectorFactoryComponent implements NetworkConnectorFactory {
@@ -75,8 +74,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   private int acceptQueueSize;
 
   private ConnectionFactoryFactory[] connectionFactoryFactories;
-
-  private String defaultProtocol;
 
   private long idleTimeout = ServerConnectorFactoryConstants.DEFAULT_IDLE_TIMEOUT;
 
@@ -92,17 +89,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   private boolean reuseAddress;
 
   private int selectorPriorityDelta;
-
-  private void applyDefaultProtocolOnServerConnector(final ServerConnector result) {
-    if (defaultProtocol != null) {
-      result.setDefaultProtocol(defaultProtocol);
-    } else {
-      Collection<ConnectionFactory> connectionFactories = result.getConnectionFactories();
-      if (connectionFactories.size() > 0) {
-        result.setDefaultProtocol(connectionFactories.iterator().next().getProtocol());
-      }
-    }
-  }
 
   @Override
   public ServerConnector createNetworkConnector(final Server server, final String host,
@@ -121,8 +107,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     result.setSelectorPriorityDelta(selectorPriorityDelta);
     result.setSoLingerTime(lingerTime);
 
-    applyDefaultProtocolOnServerConnector(result);
-
     result.setHost(host);
     result.setPort(port);
     putIntoProvidedConnectors(result);
@@ -131,8 +115,14 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private Collection<ConnectionFactory> generateConnectionFactories() {
     List<ConnectionFactory> result = new ArrayList<ConnectionFactory>();
-    for (ConnectionFactoryFactory connectionFactoryFactory : connectionFactoryFactories) {
-      result.add(connectionFactoryFactory.createConnectionFactory());
+    for (int i = 0, n = connectionFactoryFactories.length; i < n; i++) {
+      ConnectionFactoryFactory connectionFactoryFactory = connectionFactoryFactories[i];
+      String nextProtocol = null;
+      if (i < n - 1) {
+        nextProtocol = connectionFactoryFactories[i].getProtocol();
+      }
+
+      result.add(connectionFactoryFactory.createConnectionFactory(nextProtocol));
     }
     return result;
   }
@@ -186,32 +176,23 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
    */
   @ServiceRef(
       referenceId = ServerConnectorFactoryConstants.SERVICE_REF_CONNECTION_FACTORY_FACTORIES,
-      dynamic = true)
+      dynamic = true, optional = true)
   public synchronized void setConnectionFactoryFactories(
       final ConnectionFactoryFactory[] connectionFactoryFactories) {
 
-    this.connectionFactoryFactories = connectionFactoryFactories.clone();
+    if (connectionFactoryFactories == null || connectionFactoryFactories.length == 0) {
+      this.connectionFactoryFactories =
+          new ConnectionFactoryFactory[] { new HttpConnectionFactoryFactoryComponent() };
+    } else {
+      this.connectionFactoryFactories = connectionFactoryFactories.clone();
+    }
 
     Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
     while (providedServerConnectorIterator.hasNext()) {
       ServerConnector serverConnector = providedServerConnectorIterator.next();
-
+      serverConnector.setDefaultProtocol(this.connectionFactoryFactories[0].getProtocol());
       serverConnector.setConnectionFactories(generateConnectionFactories());
     }
-  }
-
-  /**
-   * Setter that also updates the property on the connector without restarting it.
-   */
-  @StringAttribute(attributeId = ServerConnectorFactoryConstants.PROP_DEFAULT_PROTOCOL,
-      optional = true, dynamic = true)
-  public synchronized void setDefaultProtocol(final String defaultProtocol) {
-    Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
-    while (providedServerConnectorIterator.hasNext()) {
-      ServerConnector serverConnector = providedServerConnectorIterator.next();
-      applyDefaultProtocolOnServerConnector(serverConnector);
-    }
-    this.defaultProtocol = defaultProtocol;
   }
 
   /**
