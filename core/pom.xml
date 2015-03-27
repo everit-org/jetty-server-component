@@ -82,7 +82,11 @@
         <configuration>
           <instructions>
             <Export-Package>org.everit.osgi.jetty.server.component</Export-Package>
-            <Import-Package>org.everit.osgi.jetty.server.component;version="[1.0,2)",*</Import-Package>
+            <Import-Package>
+              org.everit.osgi.jetty.server.component;version="[1.0,2)",
+              org.eclipse.jetty.*;version="[9.2,9.3)",
+              *
+            </Import-Package>
           </instructions>
         </configuration>
       </plugin>

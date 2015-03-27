@@ -19,10 +19,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -31,6 +32,7 @@ import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.ServiceRef;
+import org.everit.osgi.ecm.annotation.Update;
 import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
 import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.LongAttribute;
@@ -73,6 +75,8 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private int acceptQueueSize;
 
+  private boolean closeEndpointsAfterDynamicUpdate;
+
   private ConnectionFactoryFactory[] connectionFactoryFactories;
 
   private long idleTimeout = ServerConnectorFactoryConstants.DEFAULT_IDLE_TIMEOUT;
@@ -90,13 +94,33 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private int selectorPriorityDelta;
 
+  private synchronized Set<ServerConnector> activeServerConnectors() {
+    Set<ServerConnector> result = null;
+    while (result == null) {
+      try {
+        result = new HashSet<ServerConnector>(providedConnectors.keySet());
+      } catch (ConcurrentModificationException e) {
+        // TODO probably some warn logging would be nice
+      }
+    }
+    return result;
+  }
+
+  private synchronized void closeEndpointsOfAllConnector() {
+    for (ServerConnector serverConnector : activeServerConnectors()) {
+      Collection<EndPoint> endPoints = serverConnector.getConnectedEndPoints();
+      for (EndPoint endPoint : endPoints) {
+        endPoint.close();
+      }
+    }
+  }
+
   @Override
   public ServerConnector createNetworkConnector(final Server server, final String host,
       final int port) {
 
     ServerConnector result = new ServerConnector(server);
 
-    // TODO Validate if there are multiple connection factories with the same protocol
     result.setConnectionFactories(generateConnectionFactories());
     result.setAcceptorPriorityDelta(acceptorPriorityDelta);
     result.setAcceptQueueSize(acceptQueueSize);
@@ -106,7 +130,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     result.setReuseAddress(reuseAddress);
     result.setSelectorPriorityDelta(selectorPriorityDelta);
     result.setSoLingerTime(lingerTime);
-
     result.setHost(host);
     result.setPort(port);
     putIntoProvidedConnectors(result);
@@ -127,18 +150,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     return result;
   }
 
-  private synchronized Iterator<ServerConnector> providedServerConnectorIterator() {
-    Iterator<ServerConnector> result = null;
-    while (result == null) {
-      try {
-        result = new HashSet<ServerConnector>(providedConnectors.keySet()).iterator();
-      } catch (ConcurrentModificationException e) {
-        // TODO probably some warn logging would be nice
-      }
-    }
-    return result;
-  }
-
   private synchronized void putIntoProvidedConnectors(final ServerConnector result) {
     providedConnectors.put(result, Boolean.TRUE);
   }
@@ -149,25 +160,19 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.PROP_ACCEPTOR_PRIORITY_DELTA,
       defaultValue = 0, dynamic = true)
   public synchronized void setAcceptorPriorityDelta(final int acceptorPriorityDelta) {
-    Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
-    while (providedServerConnectorIterator.hasNext()) {
-      ServerConnector serverConnector = providedServerConnectorIterator.next();
+    this.acceptorPriorityDelta = acceptorPriorityDelta;
+    for (ServerConnector serverConnector : activeServerConnectors()) {
       serverConnector.setAcceptorPriorityDelta(acceptorPriorityDelta);
     }
-    this.acceptorPriorityDelta = acceptorPriorityDelta;
+
   }
 
   /**
    * Setter that also updates the property on the connector without restarting it.
    */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.PROP_ACCEPT_QUEUE_SIZE,
-      defaultValue = 0, dynamic = true)
+      defaultValue = 0)
   public synchronized void setAcceptQueueSize(final int acceptQueueSize) {
-    Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
-    while (providedServerConnectorIterator.hasNext()) {
-      ServerConnector serverConnector = providedServerConnectorIterator.next();
-      serverConnector.setAcceptQueueSize(acceptQueueSize);
-    }
     this.acceptQueueSize = acceptQueueSize;
   }
 
@@ -187,26 +192,25 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
       this.connectionFactoryFactories = connectionFactoryFactories.clone();
     }
 
-    Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
-    while (providedServerConnectorIterator.hasNext()) {
-      ServerConnector serverConnector = providedServerConnectorIterator.next();
+    for (ServerConnector serverConnector : activeServerConnectors()) {
       serverConnector.setDefaultProtocol(this.connectionFactoryFactories[0].getProtocol());
       serverConnector.setConnectionFactories(generateConnectionFactories());
     }
+    closeEndpointsAfterDynamicUpdate = true;
   }
 
   /**
    * Setter that also updates the property on the connector without restarting it.
    */
   @LongAttribute(attributeId = ServerConnectorFactoryConstants.PROP_IDLE_TIMEOUT,
-      defaultValue = ServerConnectorFactoryConstants.DEFAULT_IDLE_TIMEOUT)
+      defaultValue = ServerConnectorFactoryConstants.DEFAULT_IDLE_TIMEOUT, dynamic = true)
   public synchronized void setIdleTimeout(final long idleTimeout) {
-    Iterator<ServerConnector> providedServerConnectorIterator = providedServerConnectorIterator();
-    while (providedServerConnectorIterator.hasNext()) {
-      ServerConnector serverConnector = providedServerConnectorIterator.next();
+    this.idleTimeout = idleTimeout;
+    for (ServerConnector serverConnector : activeServerConnectors()) {
       serverConnector.setIdleTimeout(idleTimeout);
     }
-    this.idleTimeout = idleTimeout;
+    closeEndpointsAfterDynamicUpdate = true;
+
   }
 
   @BooleanAttribute(attributeId = ServerConnectorFactoryConstants.PROP_INHERIT_CHANNEL,
@@ -217,7 +221,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.PROP_LINGER_TIME,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_LINGER_TIME)
-  public synchronized void setLingerTime(final int lingerTime) {
+  public void setLingerTime(final int lingerTime) {
     this.lingerTime = lingerTime;
   }
 
@@ -232,11 +236,28 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     this.reuseAddress = reuseAddress;
   }
 
+  /**
+   * Sets the selectorPriorityDelta on the component and every active connector.
+   */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.PROP_SELECTOR_PRIORITY_DELTA,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_SELECTOR_PRIORITY_DELTA,
       dynamic = true)
   public synchronized void setSelectorPriorityDelta(final int selectorPriorityDelta) {
     this.selectorPriorityDelta = selectorPriorityDelta;
+    for (ServerConnector serverConnector : activeServerConnectors()) {
+      serverConnector.setSelectorPriorityDelta(selectorPriorityDelta);
+    }
+  }
+
+  /**
+   * Closes all opened endpoint if necessary after setters were called dynamically..
+   */
+  @Update
+  public void update() {
+    if (closeEndpointsAfterDynamicUpdate) {
+      closeEndpointsOfAllConnector();
+      closeEndpointsAfterDynamicUpdate = false;
+    }
   }
 
 }
