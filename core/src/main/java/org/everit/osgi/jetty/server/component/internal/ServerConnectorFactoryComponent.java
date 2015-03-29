@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -94,6 +93,8 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private int selectorPriorityDelta;
 
+  private boolean updateConnectionFactories = false;
+
   private synchronized Set<ServerConnector> activeServerConnectors() {
     Set<ServerConnector> result = null;
     while (result == null) {
@@ -104,15 +105,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
       }
     }
     return result;
-  }
-
-  private synchronized void closeEndpointsOfAllConnector() {
-    for (ServerConnector serverConnector : activeServerConnectors()) {
-      Collection<EndPoint> endPoints = serverConnector.getConnectedEndPoints();
-      for (EndPoint endPoint : endPoints) {
-        endPoint.close();
-      }
-    }
   }
 
   @Override
@@ -145,7 +137,10 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
         nextProtocol = connectionFactoryFactories[i].getProtocol();
       }
 
-      result.add(connectionFactoryFactory.createConnectionFactory(nextProtocol));
+      ConnectionFactory connectionFactory = connectionFactoryFactory
+          .createConnectionFactory(nextProtocol);
+
+      result.add(new CustomConnectionFactory<ConnectionFactory>(connectionFactory));
     }
     return result;
   }
@@ -192,10 +187,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
       this.connectionFactoryFactories = connectionFactoryFactories.clone();
     }
 
-    for (ServerConnector serverConnector : activeServerConnectors()) {
-      serverConnector.setDefaultProtocol(this.connectionFactoryFactories[0].getProtocol());
-      serverConnector.setConnectionFactories(generateConnectionFactories());
-    }
+    updateConnectionFactories = true;
     closeEndpointsAfterDynamicUpdate = true;
   }
 
@@ -250,14 +242,34 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   }
 
   /**
-   * Closes all opened endpoint if necessary after setters were called dynamically..
+   * Updates all connection factories if necessary and closes all endpoints if necessary.
    */
   @Update
   public void update() {
     if (closeEndpointsAfterDynamicUpdate) {
-      closeEndpointsOfAllConnector();
-      closeEndpointsAfterDynamicUpdate = false;
+      for (ServerConnector serverConnector : activeServerConnectors()) {
+        Collection<ConnectionFactory> previousConnectionFactories = new HashSet<ConnectionFactory>(
+            serverConnector.getConnectionFactories());
+
+        if (updateConnectionFactories) {
+          serverConnector.setConnectionFactories(generateConnectionFactories());
+          serverConnector.setDefaultProtocol(this.connectionFactoryFactories[0].getProtocol());
+        }
+
+        // Closing all endpoints
+        for (ConnectionFactory connectionFactory : previousConnectionFactories) {
+
+          @SuppressWarnings("unchecked")
+          CustomConnectionFactory<ConnectionFactory> customConnectionFactory =
+              (CustomConnectionFactory<ConnectionFactory>) connectionFactory;
+          customConnectionFactory.closeAllReferencedEndpoint();
+
+        }
+      }
     }
+
+    closeEndpointsAfterDynamicUpdate = false;
+    updateConnectionFactories = false;
   }
 
 }

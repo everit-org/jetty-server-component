@@ -34,8 +34,8 @@ import org.eclipse.jetty.server.Connector;
  */
 public class CustomConnectionFactory<T extends ConnectionFactory> implements ConnectionFactory {
 
-  private final WeakHashMap<Connection, Boolean> referencedConnections =
-      new WeakHashMap<Connection, Boolean>();
+  private final WeakHashMap<EndPoint, Boolean> referencedConnections =
+      new WeakHashMap<EndPoint, Boolean>();
 
   private final T wrapped;
 
@@ -43,11 +43,11 @@ public class CustomConnectionFactory<T extends ConnectionFactory> implements Con
     this.wrapped = wrapped;
   }
 
-  private synchronized Set<Connection> cloneReferencedEndPoints() {
-    Set<Connection> result = null;
+  private synchronized Set<EndPoint> cloneReferencedEndPoints() {
+    Set<EndPoint> result = null;
     while (result == null) {
       try {
-        result = new HashSet<Connection>(referencedConnections.keySet());
+        result = new HashSet<EndPoint>(referencedConnections.keySet());
       } catch (ConcurrentModificationException e) {
         // TODO probably some warn logging would be nice
       }
@@ -59,9 +59,8 @@ public class CustomConnectionFactory<T extends ConnectionFactory> implements Con
    * Closes all endpoints that are referenced from anywhere.
    */
   public void closeAllReferencedEndpoint() {
-    Set<Connection> connections = cloneReferencedEndPoints();
-    for (Connection connection : connections) {
-      EndPoint endPoint = connection.getEndPoint();
+    Set<EndPoint> endPoints = cloneReferencedEndPoints();
+    for (EndPoint endPoint : endPoints) {
       endPoint.close();
     }
   }
@@ -78,7 +77,7 @@ public class CustomConnectionFactory<T extends ConnectionFactory> implements Con
   @Override
   public synchronized Connection newConnection(final Connector connector, final EndPoint endPoint) {
     Connection result = wrapped.newConnection(connector, endPoint);
-    referencedConnections.put(result, Boolean.TRUE);
+    referencedConnections.put(result.getEndPoint(), Boolean.TRUE);
     return result;
   }
 

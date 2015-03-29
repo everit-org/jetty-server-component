@@ -51,8 +51,9 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @AttributeOrder({ HttpConnectionFactoryConstants.SERVICE_REF_CUSTOMIZERS + ".target",
-    HttpConnectionFactoryConstants.ATTR_SEND_SERVER_VERSION,
     HttpConnectionFactoryConstants.ATTR_SEND_DATE_HEADER,
+    HttpConnectionFactoryConstants.ATTR_SEND_SERVER_VERSION,
+    HttpConnectionFactoryConstants.ATTR_SEND_X_POWERED_BY,
     HttpConnectionFactoryConstants.ATTR_REQUEST_HEADER_SIZE,
     HttpConnectionFactoryConstants.ATTR_INPUT_BUFFER_SIZE,
     HttpConnectionFactoryConstants.ATTR_RESPONSE_HEADER_SIZE,
@@ -92,6 +93,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   private boolean sendDateHeader;
 
   private boolean sendServerVersion;
+
+  private boolean sendXPoweredBy;
 
   private synchronized Set<CustomConnectionFactory<HttpConnectionFactory>> cloneActiveConnectionFactories() { // CS_DISABLE_LINE_LENGTH
     Set<CustomConnectionFactory<HttpConnectionFactory>> result = null;
@@ -138,6 +141,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     httpConfiguration.setSecureScheme(secureScheme);
     httpConfiguration.setSendDateHeader(sendDateHeader);
     httpConfiguration.setSendServerVersion(sendServerVersion);
+    httpConfiguration.setSendXPoweredBy(sendXPoweredBy);
 
     HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
     httpConnectionFactory.setInputBufferSize(inputBufferSize);
@@ -285,12 +289,28 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     closeAllEndpointsAfterDynamicUpdate = true;
   }
 
+  /**
+   * Sets the sendServerVersion flag on the component and all referenced connections.
+   */
   @BooleanAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SEND_SERVER_VERSION,
       defaultValue = HttpConnectionFactoryConstants.DEFAULT_SEND_SERVER_VERSION, dynamic = true)
   public void setSendServerVersion(final boolean sendServerVersion) {
     this.sendServerVersion = sendServerVersion;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendServerVersion(sendServerVersion);
+    }
+    closeAllEndpointsAfterDynamicUpdate = true;
+  }
+
+  /**
+   * Sets the sendServerVersion flag on the component and all referenced connections.
+   */
+  @BooleanAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SEND_X_POWERED_BY,
+      defaultValue = HttpConnectionFactoryConstants.DEFAULT_SEND_X_POWERED_BY, dynamic = true)
+  public void setSendXPoweredBy(final boolean sendXPoweredBy) {
+    this.sendXPoweredBy = sendXPoweredBy;
+    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+      httpConnectionFactory.getHttpConfiguration().setSendXPoweredBy(sendXPoweredBy);
     }
     closeAllEndpointsAfterDynamicUpdate = true;
   }

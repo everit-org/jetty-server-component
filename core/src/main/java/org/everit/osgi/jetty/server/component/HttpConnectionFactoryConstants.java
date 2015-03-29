@@ -42,6 +42,8 @@ public final class HttpConnectionFactoryConstants {
 
   public static final String ATTR_SEND_SERVER_VERSION = "sendServerVersion";
 
+  public static final String ATTR_SEND_X_POWERED_BY = "sendXPoweredBy";
+
   public static final int DEFAULT_HEADER_CACHE_SIZE = 512;
 
   public static final int DEFAULT_INPUT_BUFFER_SIZE = 8192;
@@ -59,6 +61,8 @@ public final class HttpConnectionFactoryConstants {
   public static final boolean DEFAULT_SEND_DATE_HEADER = true;
 
   public static final boolean DEFAULT_SEND_SERVER_VERSION = true;
+
+  public static final boolean DEFAULT_SEND_X_POWERED_BY = false;
 
   public static final String FACTORY_PID =
       "org.everit.osgi.jetty.server.component.HttpConnectionFactoryFactory";
