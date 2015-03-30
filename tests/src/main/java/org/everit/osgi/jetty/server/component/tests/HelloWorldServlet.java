@@ -16,6 +16,7 @@
 package org.everit.osgi.jetty.server.component.tests;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -64,7 +65,10 @@ public class HelloWorldServlet implements Servlet {
   public void service(final ServletRequest req, final ServletResponse res) throws ServletException,
       IOException {
 
-    res.getWriter().write("Hello " + name + "!");
+    PrintWriter writer = res.getWriter();
+
+    writer.write("Hello " + name + "!\n");
+    writer.write("Is secure: " + req.isSecure());
 
   }
 

@@ -22,32 +22,30 @@ import java.util.WeakHashMap;
 
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
-import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.everit.osgi.jetty.server.ReferencedEndPointsCloseable;
 
 /**
- * Wraps a {@link ConnectionFactory} and provides connections in the way that remembers all
+ * A {@link HttpConnectionFactory} that provides connections in the way that remembers all
  * referenced {@link EndPoint}s so they can be closed in case of a dynamic update.
- *
- * @param <T>
- *          The type of the {@link ConnectionFactory}.s
  */
-public class CustomConnectionFactory<T extends ConnectionFactory> implements ConnectionFactory {
+public class CustomHttpConnectionFactory extends HttpConnectionFactory implements
+    ReferencedEndPointsCloseable {
 
-  private final WeakHashMap<EndPoint, Boolean> referencedConnections =
+  private final WeakHashMap<EndPoint, Boolean> referencedEndpoints =
       new WeakHashMap<EndPoint, Boolean>();
 
-  private final T wrapped;
-
-  public CustomConnectionFactory(final T wrapped) {
-    this.wrapped = wrapped;
+  public CustomHttpConnectionFactory(final HttpConfiguration config) {
+    super(config);
   }
 
   private synchronized Set<EndPoint> cloneReferencedEndPoints() {
     Set<EndPoint> result = null;
     while (result == null) {
       try {
-        result = new HashSet<EndPoint>(referencedConnections.keySet());
+        result = new HashSet<EndPoint>(referencedEndpoints.keySet());
       } catch (ConcurrentModificationException e) {
         // TODO probably some warn logging would be nice
       }
@@ -58,7 +56,7 @@ public class CustomConnectionFactory<T extends ConnectionFactory> implements Con
   /**
    * Closes all endpoints that are referenced from anywhere.
    */
-  public void closeAllReferencedEndpoint() {
+  public void closeReferencedEndpoints() {
     Set<EndPoint> endPoints = cloneReferencedEndPoints();
     for (EndPoint endPoint : endPoints) {
       endPoint.close();
@@ -66,18 +64,9 @@ public class CustomConnectionFactory<T extends ConnectionFactory> implements Con
   }
 
   @Override
-  public String getProtocol() {
-    return wrapped.getProtocol();
-  }
-
-  public T getWrapped() {
-    return wrapped;
-  }
-
-  @Override
   public synchronized Connection newConnection(final Connector connector, final EndPoint endPoint) {
-    Connection result = wrapped.newConnection(connector, endPoint);
-    referencedConnections.put(result.getEndPoint(), Boolean.TRUE);
+    Connection result = super.newConnection(connector, endPoint);
+    referencedEndpoints.put(result.getEndPoint(), Boolean.TRUE);
     return result;
   }
 

@@ -52,11 +52,19 @@ public final class ServletContextHandlerFactoryConstants {
   public static final String FILTER_CLAUSE_ATTR_URL_PATTERN =
       CommonConstants.CLAUSE_ATTR_URL_PATTERN;
 
+  public static final String SERVICE_REF_CONTEXT_ATTRIBUTE_LISTENERS = "contextAttributeListeners";
+
+  public static final String SERVICE_REF_CONTEXT_LISTENERS = "contextListeners";
+
   public static final String SERVICE_REF_ERROR_HANDLER_FACTORY = "errorHandlerFactory";
 
   public static final String SERVICE_REF_FILTERS = "filters";
 
   public static final String SERVICE_REF_MIMETYPES = "mimeTypes";
+
+  public static final String SERVICE_REF_REQUEST_ATTRIBUTE_LISTENERS = "requestAttributeListeners";
+
+  public static final String SERVICE_REF_REQUEST_LISTENERS = "requestListeners";
 
   public static final String SERVICE_REF_SECURITY_HANDLER_FACTORY = "securityHandlerFactory";
 

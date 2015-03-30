@@ -22,6 +22,10 @@ import java.util.WeakHashMap;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
+import javax.servlet.ServletContextAttributeListener;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRequestAttributeListener;
+import javax.servlet.ServletRequestListener;
 
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.security.SecurityHandler;
@@ -80,6 +84,10 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     ServletContextHandlerFactoryConstants.ATTR_VIRTUAL_HOSTS,
     ServletContextHandlerFactoryConstants.SERVICE_REF_SERVLETS + ".clause",
     ServletContextHandlerFactoryConstants.SERVICE_REF_FILTERS + ".clause",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_CONTEXT_LISTENERS + ".target",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_CONTEXT_ATTRIBUTE_LISTENERS + ".target",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_REQUEST_LISTENERS + ".target",
+    ServletContextHandlerFactoryConstants.SERVICE_REF_REQUEST_ATTRIBUTE_LISTENERS + ".target",
     ServletContextHandlerFactoryConstants.ATTR_SESSIONS,
     ServletContextHandlerFactoryConstants.SERVICE_REF_SESSION_HANDLER_FACTORY + ".target",
     ServletContextHandlerFactoryConstants.ATTR_SECURITY,
@@ -93,6 +101,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   private final WeakHashMap<ServletContextHandler, Boolean> activeServletContextHandlers =
       new WeakHashMap<>();
+
+  private ServletContextAttributeListener[] contextAttributeListeners;
+
+  private ServletContextListener[] contextListeners;
 
   private ErrorHandlerFactory errorHandlerFactory;
 
@@ -109,6 +121,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   private int maxFormKeys;
 
   private MimeTypes mimeTypes;
+
+  private ServletRequestAttributeListener[] requestAttributeListeners;
+
+  private ServletRequestListener[] requestListeners;
 
   private boolean security = false;
 
@@ -132,6 +148,25 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   public void activate() {
     servletHolderManager.updatePrviousKeys(servletKeys);
     filterHolderManager.updatePrviousKeys(filterKeys);
+  }
+
+  private void addListenersToHandler(final ServletContextHandler servletContextHandler) {
+    for (ServletContextListener contextListener : contextListeners) {
+      servletContextHandler.addEventListener(contextListener);
+    }
+
+    for (ServletContextAttributeListener contextAttributeListener : contextAttributeListeners) {
+      servletContextHandler.addEventListener(contextAttributeListener);
+    }
+
+    for (ServletRequestListener requestListener : requestListeners) {
+      servletContextHandler.addEventListener(requestListener);
+    }
+
+    for (ServletRequestAttributeListener requestAttributeListener : requestAttributeListeners) {
+      servletContextHandler.addEventListener(requestAttributeListener);
+    }
+
   }
 
   private Set<ServletContextHandler> cloneActiveServletContextHandlerSet() {
@@ -175,6 +210,8 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     servletContextHandler.setMaxFormKeys(maxFormKeys);
     setMimeTypesOnServletContextHandler(servletContextHandler);
     servletContextHandler.setVirtualHosts(virtualHosts);
+
+    addListenersToHandler(servletContextHandler);
 
     activeServletContextHandlers.put(servletContextHandler, Boolean.TRUE);
 
@@ -235,6 +272,20 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   }
 
   @ServiceRef(
+      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_CONTEXT_ATTRIBUTE_LISTENERS,
+      optional = true)
+  public void setContextAttributeListeners(
+      final ServletContextAttributeListener[] contextAttributeListeners) {
+    this.contextAttributeListeners = contextAttributeListeners;
+  }
+
+  @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_CONTEXT_LISTENERS,
+      optional = true)
+  public void setContextListeners(final ServletContextListener[] contextListeners) {
+    this.contextListeners = contextListeners;
+  }
+
+  @ServiceRef(
       referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_ERROR_HANDLER_FACTORY,
       optional = true)
   public void setErrorHandlerFactory(final ErrorHandlerFactory errorHandlerFactory) {
@@ -275,6 +326,20 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
       servletContextHandler.setMimeTypes(mimeTypes);
     }
 
+  }
+
+  @ServiceRef(
+      referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_REQUEST_ATTRIBUTE_LISTENERS,
+      optional = true)
+  public void setRequestAttributeListeners(
+      final ServletRequestAttributeListener[] requestAttributeListeners) {
+    this.requestAttributeListeners = requestAttributeListeners;
+  }
+
+  @ServiceRef(referenceId = ServletContextHandlerFactoryConstants.SERVICE_REF_REQUEST_LISTENERS,
+      optional = true)
+  public void setRequestListeners(final ServletRequestListener[] requestListeners) {
+    this.requestListeners = requestListeners;
   }
 
   @BooleanAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_SECURITY,
@@ -334,7 +399,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     filterMappingManager.updatePrviousKeys(filterMappingKeys);
   }
 
-  private void updateMaxFormContentSize(final int pMaxFormContentSize) {
+  private synchronized void updateMaxFormContentSize(final int pMaxFormContentSize) {
     this.maxFormContentSize = pMaxFormContentSize;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
@@ -343,7 +408,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   }
 
-  private void updateMaxFormKeys(final int pMaxFormKeys) {
+  private synchronized void updateMaxFormKeys(final int pMaxFormKeys) {
     this.maxFormKeys = pMaxFormKeys;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
@@ -352,7 +417,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   }
 
-  private void updateMimeTypes(final MimeTypes pMimeTypes) {
+  private synchronized void updateMimeTypes(final MimeTypes pMimeTypes) {
     this.mimeTypes = pMimeTypes;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
@@ -360,7 +425,8 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     }
   }
 
-  private void updateServletHandlerWithDynamicSettings(final CustomServletHandler servletHandler) {
+  private synchronized void updateServletHandlerWithDynamicSettings(
+      final CustomServletHandler servletHandler) {
 
     ServletHolder[] servletHolders = servletHolderManager.generateUpgradedElementArray(servletKeys,
         servletHandler.getServlets());
@@ -378,7 +444,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
         filterMappings);
   }
 
-  private void updateVirtualHosts(final String[] pVirtualHosts) {
+  private synchronized void updateVirtualHosts(final String[] pVirtualHosts) {
     this.virtualHosts = pVirtualHosts;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {

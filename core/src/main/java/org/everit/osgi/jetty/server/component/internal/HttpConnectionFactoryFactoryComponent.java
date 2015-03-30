@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConfiguration.Customizer;
@@ -35,9 +34,11 @@ import org.everit.osgi.ecm.annotation.Update;
 import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
 import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
+import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
 import org.everit.osgi.jetty.server.component.HttpConnectionFactoryConstants;
+import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
@@ -50,6 +51,8 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     localizationBase = "OSGI-INF/metatype/httpConnectionFactoryFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@StringAttributes({
+    @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true) })
 @AttributeOrder({ HttpConnectionFactoryConstants.SERVICE_REF_CUSTOMIZERS + ".target",
     HttpConnectionFactoryConstants.ATTR_SEND_DATE_HEADER,
     HttpConnectionFactoryConstants.ATTR_SEND_SERVER_VERSION,
@@ -62,11 +65,12 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     HttpConnectionFactoryConstants.ATTR_HEADER_CACHE_SIZE,
     HttpConnectionFactoryConstants.ATTR_SECURE_SCHEME,
     HttpConnectionFactoryConstants.ATTR_SECURE_PORT,
-    HttpConnectionFactoryConstants.ATTR_DELAY_DISPATCH_UNTIL_CONTENT, })
+    HttpConnectionFactoryConstants.ATTR_DELAY_DISPATCH_UNTIL_CONTENT,
+    Constants.SERVICE_DESCRIPTION, })
 @Service
 public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryFactory {
 
-  private final WeakHashMap<CustomConnectionFactory<HttpConnectionFactory>, Boolean> activeConnectionFactories = new WeakHashMap<>(); // CS_DISABLE_LINE_LENGTH
+  private final WeakHashMap<CustomHttpConnectionFactory, Boolean> activeConnectionFactories = new WeakHashMap<>(); // CS_DISABLE_LINE_LENGTH
 
   private boolean closeAllEndpointsAfterDynamicUpdate = false;
 
@@ -96,8 +100,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
 
   private boolean sendXPoweredBy;
 
-  private synchronized Set<CustomConnectionFactory<HttpConnectionFactory>> cloneActiveConnectionFactories() { // CS_DISABLE_LINE_LENGTH
-    Set<CustomConnectionFactory<HttpConnectionFactory>> result = null;
+  private synchronized Set<CustomHttpConnectionFactory> cloneActiveConnectionFactories() {
+    Set<CustomHttpConnectionFactory> result = null;
     while (result == null) {
       try {
         result = new HashSet<>(activeConnectionFactories.keySet());
@@ -109,13 +113,13 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   }
 
   private Set<HttpConnectionFactory> cloneActiveHttpConnectionFactories() {
-    Set<CustomConnectionFactory<HttpConnectionFactory>> connectionFactories =
+    Set<CustomHttpConnectionFactory> connectionFactories =
         cloneActiveConnectionFactories();
 
     Set<HttpConnectionFactory> result = new HashSet<HttpConnectionFactory>();
 
-    for (CustomConnectionFactory<HttpConnectionFactory> customConnectionFactory : connectionFactories) { // CS_DISABLE_LINE_LENGTH
-      result.add(customConnectionFactory.getWrapped());
+    for (CustomHttpConnectionFactory customConnectionFactory : connectionFactories) {
+      result.add(customConnectionFactory);
     }
 
     return result;
@@ -143,19 +147,12 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     httpConfiguration.setSendServerVersion(sendServerVersion);
     httpConfiguration.setSendXPoweredBy(sendXPoweredBy);
 
-    HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfiguration);
+    CustomHttpConnectionFactory httpConnectionFactory = new CustomHttpConnectionFactory(
+        httpConfiguration);
     httpConnectionFactory.setInputBufferSize(inputBufferSize);
 
-    CustomConnectionFactory<HttpConnectionFactory> customConnectionFactory =
-        new CustomConnectionFactory<HttpConnectionFactory>(httpConnectionFactory);
-
-    activeConnectionFactories.put(customConnectionFactory, true);
-    return customConnectionFactory;
-  }
-
-  @Override
-  public String getProtocol() {
-    return HttpVersion.HTTP_1_1.toString();
+    activeConnectionFactories.put(httpConnectionFactory, true);
+    return httpConnectionFactory;
   }
 
   /**
@@ -321,9 +318,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   @Update
   public synchronized void update() {
     boolean closeAllEndpoints = closeAllEndpointsAfterDynamicUpdate;
-    for (CustomConnectionFactory<HttpConnectionFactory> connectionFactory : cloneActiveConnectionFactories()) { // CS_DISABLE_LINE_LENGTH
-      HttpConnectionFactory httpConnectionFactory = connectionFactory.getWrapped();
-      HttpConfiguration httpConfiguration = httpConnectionFactory.getHttpConfiguration();
+    for (CustomHttpConnectionFactory connectionFactory : cloneActiveConnectionFactories()) {
+      HttpConfiguration httpConfiguration = connectionFactory.getHttpConfiguration();
       if (httpConfiguration.getOutputBufferSize() != outputBufferSize) {
         httpConfiguration.setOutputBufferSize(outputBufferSize);
         closeAllEndpoints = true;
@@ -334,7 +330,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
         closeAllEndpoints = true;
       }
       if (closeAllEndpoints) {
-        connectionFactory.closeAllReferencedEndpoint();
+        connectionFactory.closeReferencedEndpoints();
       }
     }
 

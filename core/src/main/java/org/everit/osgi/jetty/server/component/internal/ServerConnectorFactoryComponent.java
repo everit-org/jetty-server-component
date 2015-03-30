@@ -15,17 +15,17 @@
  */
 package org.everit.osgi.jetty.server.component.internal;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.AttributeOrder;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
@@ -40,6 +40,7 @@ import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
 import org.everit.osgi.jetty.server.NetworkConnectorFactory;
+import org.everit.osgi.jetty.server.ReferencedEndPointsCloseable;
 import org.everit.osgi.jetty.server.component.ServerConnectorFactoryConstants;
 import org.osgi.framework.Constants;
 
@@ -95,6 +96,12 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private boolean updateConnectionFactories = false;
 
+  @Activate
+  public void activate() {
+    closeEndpointsAfterDynamicUpdate = false;
+    updateConnectionFactories = false;
+  }
+
   private synchronized Set<ServerConnector> activeServerConnectors() {
     Set<ServerConnector> result = null;
     while (result == null) {
@@ -113,7 +120,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
     ServerConnector result = new ServerConnector(server);
 
-    result.setConnectionFactories(generateConnectionFactories());
+    Collection<ConnectionFactory> connectionFactories = generateConnectionFactories();
+    result.setConnectionFactories(connectionFactories);
+    result.setDefaultProtocol(connectionFactories.iterator().next().getProtocol());
     result.setAcceptorPriorityDelta(acceptorPriorityDelta);
     result.setAcceptQueueSize(acceptQueueSize);
     result.setIdleTimeout(idleTimeout);
@@ -129,20 +138,19 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   }
 
   private Collection<ConnectionFactory> generateConnectionFactories() {
-    List<ConnectionFactory> result = new ArrayList<ConnectionFactory>();
-    for (int i = 0, n = connectionFactoryFactories.length; i < n; i++) {
+    int n = connectionFactoryFactories.length;
+    ConnectionFactory[] result = new ConnectionFactory[n];
+    String nextProtocol = null;
+    for (int i = n - 1; i >= 0; i--) {
       ConnectionFactoryFactory connectionFactoryFactory = connectionFactoryFactories[i];
-      String nextProtocol = null;
-      if (i < n - 1) {
-        nextProtocol = connectionFactoryFactories[i].getProtocol();
-      }
 
       ConnectionFactory connectionFactory = connectionFactoryFactory
           .createConnectionFactory(nextProtocol);
 
-      result.add(new CustomConnectionFactory<ConnectionFactory>(connectionFactory));
+      result[i] = connectionFactory;
+      nextProtocol = connectionFactory.getProtocol();
     }
-    return result;
+    return Arrays.asList(result);
   }
 
   private synchronized void putIntoProvidedConnectors(final ServerConnector result) {
@@ -252,18 +260,17 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
             serverConnector.getConnectionFactories());
 
         if (updateConnectionFactories) {
-          serverConnector.setConnectionFactories(generateConnectionFactories());
-          serverConnector.setDefaultProtocol(this.connectionFactoryFactories[0].getProtocol());
+          Collection<ConnectionFactory> connectionFactories = generateConnectionFactories();
+          serverConnector.setConnectionFactories(connectionFactories);
+          serverConnector.setDefaultProtocol(connectionFactories.iterator().next().getProtocol());
         }
 
         // Closing all endpoints
         for (ConnectionFactory connectionFactory : previousConnectionFactories) {
 
-          @SuppressWarnings("unchecked")
-          CustomConnectionFactory<ConnectionFactory> customConnectionFactory =
-              (CustomConnectionFactory<ConnectionFactory>) connectionFactory;
-          customConnectionFactory.closeAllReferencedEndpoint();
-
+          if (connectionFactory instanceof ReferencedEndPointsCloseable) {
+            ((ReferencedEndPointsCloseable) connectionFactory).closeReferencedEndpoints();
+          }
         }
       }
     }
@@ -271,5 +278,4 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     closeEndpointsAfterDynamicUpdate = false;
     updateConnectionFactories = false;
   }
-
 }
