@@ -26,7 +26,7 @@ import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Deactivate;
 import org.everit.osgi.ecm.component.ComponentContext;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.component.ServerConnectorFactoryConstants;
+import org.everit.osgi.jetty.server.component.SecureRequestCustomizerConstants;
 import org.osgi.framework.ServiceRegistration;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
@@ -35,8 +35,9 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * A very simple component that registers a {@link SecureRequestCustomizer} instance as an OSGi
  * service.
  */
-@Component(componentId = ServerConnectorFactoryConstants.FACTORY_PID,
-    configurationPolicy = ConfigurationPolicy.IGNORE)
+@Component(componentId = SecureRequestCustomizerConstants.FACTORY_PID,
+    configurationPolicy = ConfigurationPolicy.IGNORE,
+    localizationBase = "OSGI-INF/metatype/secureRequestCustomizer")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 public class SecureRequestCustomizerComponent {
