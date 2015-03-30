@@ -30,14 +30,14 @@ The module can be downloaded from maven-central.
  * Run "./runConsole" on linux or "runConsole" on windows
  * Open "https://localhost:4848" in the browser to see the webconsole
  * There are two pre-configured connectors with servlets:
- ** http://localhost:8080/sample/helloworld
- ** https://localhost:8443/sample/helloworld
+   * http://localhost:8080/sample/helloworld
+   * https://localhost:8443/sample/helloworld
 
 ## Missing features (roadmap)
 
- - No possibility to specify trustStore and client cert auth for
+ * No possibility to specify trustStore and client cert auth for
    SslConnectionFactory Factory component
- - HashSessionHandler is unfinished. Only session-timeout and the listeners are
+ * HashSessionHandler is unfinished. Only session-timeout and the listeners are
 configurable.
- - There is no component for JDBC based session handler
- - No components for ProxyRequestCustomizer and HostHeaderCustomizer
+ * There is no component for JDBC based session handler
+ * No components for ProxyRequestCustomizer and HostHeaderCustomizer
