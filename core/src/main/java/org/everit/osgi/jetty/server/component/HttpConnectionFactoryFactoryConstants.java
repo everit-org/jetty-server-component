@@ -18,7 +18,7 @@ package org.everit.osgi.jetty.server.component;
 /**
  * Constants for HttpConnectionFactory component.
  */
-public final class HttpConnectionFactoryConstants {
+public final class HttpConnectionFactoryFactoryConstants {
 
   public static final String ATTR_DELAY_DISPATCH_UNTIL_CONTENT = "delayDispatchUntilContent";
 
@@ -69,6 +69,6 @@ public final class HttpConnectionFactoryConstants {
 
   public static final String SERVICE_REF_CUSTOMIZERS = "customizers";
 
-  private HttpConnectionFactoryConstants() {
+  private HttpConnectionFactoryFactoryConstants() {
   }
 }

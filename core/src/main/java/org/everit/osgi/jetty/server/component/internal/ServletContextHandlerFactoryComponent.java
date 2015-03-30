@@ -35,6 +35,7 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.FilterMapping;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlet.ServletMapping;
 import org.everit.osgi.ecm.annotation.Activate;
@@ -390,8 +391,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
-      updateServletHandlerWithDynamicSettings((CustomServletHandler) servletContextHandler
-          .getServletHandler());
+      ServletHandler servletHandler = servletContextHandler.getServletHandler();
+      if (servletHandler instanceof CustomServletHandler) {
+        updateServletHandlerWithDynamicSettings((CustomServletHandler) servletHandler);
+      }
     }
     servletHolderManager.updatePrviousKeys(servletKeys);
     servletMappingManager.updatePrviousKeys(servletMappingKeys);

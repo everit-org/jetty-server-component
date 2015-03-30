@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>org.everit.osgi.jetty.server.component.tests</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
 
   <packaging>bundle</packaging>
   <name>Everit - Jetty Server Component Tests</name>
@@ -47,7 +47,7 @@
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-            <EOSGi-TestNum>0</EOSGi-TestNum>
+            <EOSGi-TestNum>1</EOSGi-TestNum>
           </instructions>
         </configuration>
       </plugin>
@@ -65,27 +65,29 @@
               <id>jettyServerFelix</id>
               <framework>felix</framework>
               <systemProperties>
+                <felix.cm.dir>${wrapper_home}/../conf/configadmin</felix.cm.dir>
                 <mvel2.disable.jit>true</mvel2.disable.jit>
                 <org.osgi.service.http.port>0</org.osgi.service.http.port>
                 <org.osgi.service.http.port.secure>$${ if (System.getenv("EOSGI_STOP_AFTER_TESTS").equals("true")) "0"; else "4848"; }</org.osgi.service.http.port.secure>
               </systemProperties>
-              <vmOptions>
-                <vmOption>-Xdebug</vmOption>
-                <vmOption>-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n</vmOption>
-              </vmOptions>
+<!--               <vmOptions> -->
+<!--                 <vmOption>-Xdebug</vmOption> -->
+<!--                 <vmOption>-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n</vmOption> -->
+<!--               </vmOptions> -->
             </environment>
             <environment>
               <id>jettyServerEquinox</id>
               <framework>equinox</framework>
               <systemProperties>
+                <felix.cm.dir>${wrapper_home}/../conf/configadmin</felix.cm.dir>
                 <mvel2.disable.jit>true</mvel2.disable.jit>
                 <org.osgi.service.http.port>0</org.osgi.service.http.port>
                 <org.osgi.service.http.port.secure>$${ if (System.getenv("EOSGI_STOP_AFTER_TESTS").equals("true")) "0"; else "4848"; }</org.osgi.service.http.port.secure>
               </systemProperties>
-              <vmOptions>
-                <vmOption>-Xdebug</vmOption>
-                <vmOption>-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n</vmOption>
-              </vmOptions>
+<!--               <vmOptions> -->
+<!--                 <vmOption>-Xdebug</vmOption> -->
+<!--                 <vmOption>-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n</vmOption> -->
+<!--               </vmOptions> -->
             </environment>
           </environments>
         </configuration>

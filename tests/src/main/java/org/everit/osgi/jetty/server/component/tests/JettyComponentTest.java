@@ -26,6 +26,9 @@ import org.junit.Test;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
+/**
+ * Test component that tests functionlity.
+ */
 @Component
 @Service()
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,

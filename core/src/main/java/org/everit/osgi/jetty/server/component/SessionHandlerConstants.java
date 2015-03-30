@@ -13,18 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.everit.osgi.jetty.server.component.internal;
+package org.everit.osgi.jetty.server.component;
 
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.everit.osgi.jetty.server.SessionHandlerFactory;
+/**
+ * Common constants that are available in session manager implementations.
+ */
+public final class SessionHandlerConstants {
 
-public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
+  public static final String ATTR_MAX_INACTIVE_INTERVAL = "maxInactiveInterval";
 
-  @Override
-  public SessionHandler createSessionHandler() {
-    SessionHandler sessionHandler = new SessionHandler();
+  public static final int DEFAULT_MAX_INACTIVE_INTERVAL = 30;
 
-    return sessionHandler;
+  public static final String SERVICE_REF_SESSION_ATTRIBUTE_LISTENERS = "sessionAttributeListeners";
+
+  public static final String SERVICE_REF_SESSION_ID_LISTENERS = "sessionIdListeners";
+
+  public static final String SERVICE_REF_SESSION_LISTENERS = "sessionListeners";
+
+  private SessionHandlerConstants() {
   }
 
 }

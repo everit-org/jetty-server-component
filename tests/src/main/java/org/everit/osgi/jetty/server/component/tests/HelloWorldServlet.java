@@ -32,6 +32,9 @@ import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
 
+/**
+ * Simple servlet to test functionality.
+ */
 @Component(configurationPolicy = ConfigurationPolicy.FACTORY)
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
@@ -42,7 +45,6 @@ public class HelloWorldServlet implements Servlet {
 
   @Override
   public void destroy() {
-    System.out.println("/////////// DESTROY CALLED: " + name);
   }
 
   @Override
@@ -58,7 +60,6 @@ public class HelloWorldServlet implements Servlet {
 
   @Override
   public void init(final ServletConfig config) throws ServletException {
-    System.out.println("///////////////// INIT CALLED: " + name);
   }
 
   @Override

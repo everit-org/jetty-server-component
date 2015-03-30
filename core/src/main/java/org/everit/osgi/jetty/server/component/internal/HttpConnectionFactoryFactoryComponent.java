@@ -37,7 +37,7 @@ import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
-import org.everit.osgi.jetty.server.component.HttpConnectionFactoryConstants;
+import org.everit.osgi.jetty.server.component.HttpConnectionFactoryFactoryConstants;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
@@ -46,26 +46,26 @@ import aQute.bnd.annotation.headers.ProvideCapability;
  * ECM based configurable component that can start one or more {@link HttpConnectionFactory}s and
  * register them as OSGi services.
  */
-@Component(componentId = HttpConnectionFactoryConstants.FACTORY_PID,
+@Component(componentId = HttpConnectionFactoryFactoryConstants.FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     localizationBase = "OSGI-INF/metatype/httpConnectionFactoryFactory")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true) })
-@AttributeOrder({ HttpConnectionFactoryConstants.SERVICE_REF_CUSTOMIZERS + ".target",
-    HttpConnectionFactoryConstants.ATTR_SEND_DATE_HEADER,
-    HttpConnectionFactoryConstants.ATTR_SEND_SERVER_VERSION,
-    HttpConnectionFactoryConstants.ATTR_SEND_X_POWERED_BY,
-    HttpConnectionFactoryConstants.ATTR_REQUEST_HEADER_SIZE,
-    HttpConnectionFactoryConstants.ATTR_INPUT_BUFFER_SIZE,
-    HttpConnectionFactoryConstants.ATTR_RESPONSE_HEADER_SIZE,
-    HttpConnectionFactoryConstants.ATTR_OUTPUT_BUFFER_SIZE,
-    HttpConnectionFactoryConstants.ATTR_OUTPUT_AGGREGATION_SIZE,
-    HttpConnectionFactoryConstants.ATTR_HEADER_CACHE_SIZE,
-    HttpConnectionFactoryConstants.ATTR_SECURE_SCHEME,
-    HttpConnectionFactoryConstants.ATTR_SECURE_PORT,
-    HttpConnectionFactoryConstants.ATTR_DELAY_DISPATCH_UNTIL_CONTENT,
+@AttributeOrder({ HttpConnectionFactoryFactoryConstants.SERVICE_REF_CUSTOMIZERS + ".target",
+    HttpConnectionFactoryFactoryConstants.ATTR_SEND_DATE_HEADER,
+    HttpConnectionFactoryFactoryConstants.ATTR_SEND_SERVER_VERSION,
+    HttpConnectionFactoryFactoryConstants.ATTR_SEND_X_POWERED_BY,
+    HttpConnectionFactoryFactoryConstants.ATTR_REQUEST_HEADER_SIZE,
+    HttpConnectionFactoryFactoryConstants.ATTR_INPUT_BUFFER_SIZE,
+    HttpConnectionFactoryFactoryConstants.ATTR_RESPONSE_HEADER_SIZE,
+    HttpConnectionFactoryFactoryConstants.ATTR_OUTPUT_BUFFER_SIZE,
+    HttpConnectionFactoryFactoryConstants.ATTR_OUTPUT_AGGREGATION_SIZE,
+    HttpConnectionFactoryFactoryConstants.ATTR_HEADER_CACHE_SIZE,
+    HttpConnectionFactoryFactoryConstants.ATTR_SECURE_SCHEME,
+    HttpConnectionFactoryFactoryConstants.ATTR_SECURE_PORT,
+    HttpConnectionFactoryFactoryConstants.ATTR_DELAY_DISPATCH_UNTIL_CONTENT,
     Constants.SERVICE_DESCRIPTION, })
 @Service
 public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryFactory {
@@ -100,21 +100,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
 
   private boolean sendXPoweredBy;
 
-  private synchronized Set<CustomHttpConnectionFactory> cloneActiveConnectionFactories() {
-    Set<CustomHttpConnectionFactory> result = null;
-    while (result == null) {
-      try {
-        result = new HashSet<>(activeConnectionFactories.keySet());
-      } catch (ConcurrentModificationException e) {
-        // TODO probably some warn logging would be nice
-      }
-    }
-    return result;
-  }
-
   private Set<HttpConnectionFactory> cloneActiveHttpConnectionFactories() {
     Set<CustomHttpConnectionFactory> connectionFactories =
-        cloneActiveConnectionFactories();
+        cloneReferencedConnectionFactories();
 
     Set<HttpConnectionFactory> result = new HashSet<HttpConnectionFactory>();
 
@@ -124,6 +112,18 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
 
     return result;
 
+  }
+
+  private synchronized Set<CustomHttpConnectionFactory> cloneReferencedConnectionFactories() {
+    Set<CustomHttpConnectionFactory> result = null;
+    while (result == null) {
+      try {
+        result = new HashSet<>(activeConnectionFactories.keySet());
+      } catch (ConcurrentModificationException e) {
+        // TODO probably some warn logging would be nice
+      }
+    }
+    return result;
   }
 
   @Override
@@ -158,7 +158,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Updates the customizers on the component and all connection factories dynamically.
    **/
-  @ServiceRef(referenceId = HttpConnectionFactoryConstants.SERVICE_REF_CUSTOMIZERS,
+  @ServiceRef(referenceId = HttpConnectionFactoryFactoryConstants.SERVICE_REF_CUSTOMIZERS,
       optional = true, dynamic = true)
   public synchronized void setCustomizers(final Customizer[] customizers) {
     this.customizers = customizers;
@@ -170,7 +170,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Updates delayDispatchUntilContent on the component and all active connection factories.
    */
-  @BooleanAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_DELAY_DISPATCH_UNTIL_CONTENT,
+  @BooleanAttribute(
+      attributeId = HttpConnectionFactoryFactoryConstants.ATTR_DELAY_DISPATCH_UNTIL_CONTENT,
       defaultValue = false, dynamic = true)
   public synchronized void setDelayDispatchUntilContent(final boolean delayDispatchUntilContent) {
     this.delayDispatchUntilContent = delayDispatchUntilContent;
@@ -184,8 +185,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Updates header cache size on component and all created connection factory.
    */
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_HEADER_CACHE_SIZE,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_HEADER_CACHE_SIZE, dynamic = true)
+  @IntegerAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_HEADER_CACHE_SIZE,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_HEADER_CACHE_SIZE,
+      dynamic = true)
   public void setHeaderCacheSize(final int headerCacheSize) {
     this.headerCacheSize = headerCacheSize;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -199,8 +201,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
    * {@link HttpConnectionFactory#setInputBufferSize(int)} on every generated
    * {@link HttpConnectionFactory}.
    */
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_INPUT_BUFFER_SIZE,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_INPUT_BUFFER_SIZE, dynamic = true)
+  @IntegerAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_INPUT_BUFFER_SIZE,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_INPUT_BUFFER_SIZE,
+      dynamic = true)
   public void setInputBufferSize(final int inputBufferSize) {
     this.inputBufferSize = inputBufferSize;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -209,14 +212,16 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     closeAllEndpointsAfterDynamicUpdate = true;
   }
 
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_OUTPUT_AGGREGATION_SIZE,
+  @IntegerAttribute(
+      attributeId = HttpConnectionFactoryFactoryConstants.ATTR_OUTPUT_AGGREGATION_SIZE,
       optional = true, dynamic = true)
   public void setOutputAggregationSize(final Integer outputAggregationSize) {
     this.outputAggregationSize = outputAggregationSize;
   }
 
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_OUTPUT_BUFFER_SIZE,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_OUTPUT_BUFFER_SIZE, dynamic = true)
+  @IntegerAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_OUTPUT_BUFFER_SIZE,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_OUTPUT_BUFFER_SIZE,
+      dynamic = true)
   public void setOutputBufferSize(final int outputBufferSize) {
     this.outputBufferSize = outputBufferSize;
   }
@@ -224,8 +229,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets requestHeaderSize on component and all already created connection factories.
    */
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_REQUEST_HEADER_SIZE,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_REQUEST_HEADER_SIZE, dynamic = true)
+  @IntegerAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_REQUEST_HEADER_SIZE,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_REQUEST_HEADER_SIZE,
+      dynamic = true)
   public synchronized void setRequestHeaderSize(final int requestHeaderSize) {
     this.requestHeaderSize = requestHeaderSize;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -237,8 +243,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets responseHeaderSize on component and all already created connection factories.
    */
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_RESPONSE_HEADER_SIZE,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_RESPONSE_HEADER_SIZE, dynamic = true)
+  @IntegerAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_RESPONSE_HEADER_SIZE,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_RESPONSE_HEADER_SIZE,
+      dynamic = true)
   public synchronized void setResponseHeaderSize(final int responseHeaderSize) {
     this.responseHeaderSize = responseHeaderSize;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -250,8 +257,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets securePort an component and all already created connection factories.
    */
-  @IntegerAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SECURE_PORT,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_SECURE_PORT, dynamic = true)
+  @IntegerAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_SECURE_PORT,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_SECURE_PORT, dynamic = true)
   public synchronized void setSecurePort(final int securePort) {
     this.securePort = securePort;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -263,8 +270,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets secureScheme an component and all already created connection factories.
    */
-  @StringAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SECURE_SCHEME,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_SECURE_SCHEME, dynamic = true)
+  @StringAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_SECURE_SCHEME,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_SECURE_SCHEME, dynamic = true)
   public synchronized void setSecureScheme(final String secureScheme) {
     this.secureScheme = secureScheme;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -276,8 +283,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets sendDateHeader an component and all already created connection factories.
    */
-  @BooleanAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SEND_DATE_HEADER,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_SEND_DATE_HEADER, dynamic = true)
+  @BooleanAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_SEND_DATE_HEADER,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_SEND_DATE_HEADER, dynamic = true)
   public synchronized void setSendDateHeader(final boolean sendDateHeader) {
     this.sendDateHeader = sendDateHeader;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -289,8 +296,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets the sendServerVersion flag on the component and all referenced connections.
    */
-  @BooleanAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SEND_SERVER_VERSION,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_SEND_SERVER_VERSION, dynamic = true)
+  @BooleanAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_SEND_SERVER_VERSION,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_SEND_SERVER_VERSION,
+      dynamic = true)
   public void setSendServerVersion(final boolean sendServerVersion) {
     this.sendServerVersion = sendServerVersion;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -302,8 +310,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   /**
    * Sets the sendServerVersion flag on the component and all referenced connections.
    */
-  @BooleanAttribute(attributeId = HttpConnectionFactoryConstants.ATTR_SEND_X_POWERED_BY,
-      defaultValue = HttpConnectionFactoryConstants.DEFAULT_SEND_X_POWERED_BY, dynamic = true)
+  @BooleanAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_SEND_X_POWERED_BY,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_SEND_X_POWERED_BY,
+      dynamic = true)
   public void setSendXPoweredBy(final boolean sendXPoweredBy) {
     this.sendXPoweredBy = sendXPoweredBy;
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
@@ -318,7 +327,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   @Update
   public synchronized void update() {
     boolean closeAllEndpoints = closeAllEndpointsAfterDynamicUpdate;
-    for (CustomHttpConnectionFactory connectionFactory : cloneActiveConnectionFactories()) {
+    for (CustomHttpConnectionFactory connectionFactory : cloneReferencedConnectionFactories()) {
       HttpConfiguration httpConfiguration = connectionFactory.getHttpConfiguration();
       if (httpConfiguration.getOutputBufferSize() != outputBufferSize) {
         httpConfiguration.setOutputBufferSize(outputBufferSize);
