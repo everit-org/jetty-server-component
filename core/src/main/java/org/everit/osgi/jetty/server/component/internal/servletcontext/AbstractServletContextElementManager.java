@@ -58,7 +58,7 @@ public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
       } else {
         Integer position = previousKeysWithPosition.get(newKey);
         if (position != null) {
-          result[i] = previousElements[i];
+          result[i] = previousElements[position];
         } else {
           result[i] = createNewElement(newKey);
         }
