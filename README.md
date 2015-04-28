@@ -21,6 +21,7 @@ The module can be downloaded from maven-central.
  * SslConnectionFactory Factory
  * SecureRequestCustomizer
  * HashSessionHandler Factory
+ * ErrorPageErrorHandler Factory
 
 ## How to try
 
@@ -37,7 +38,5 @@ The module can be downloaded from maven-central.
 
  * No possibility to specify trustStore and client cert auth for
    SslConnectionFactory Factory component
- * HashSessionHandler is unfinished. Only session-timeout and the listeners are
-configurable.
  * There is no component for JDBC based session handler
  * No components for ProxyRequestCustomizer and HostHeaderCustomizer
