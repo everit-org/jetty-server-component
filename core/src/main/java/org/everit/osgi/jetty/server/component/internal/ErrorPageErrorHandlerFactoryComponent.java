@@ -120,9 +120,9 @@ public class ErrorPageErrorHandlerFactoryComponent implements ErrorHandlerFactor
 
     for (String definition : errorPageMappings) {
       int indexOfEquals = definition.indexOf('=');
-      if (!(indexOfEquals > 1 && indexOfEquals < definition.length() - 2)) {
+      if (!(indexOfEquals > 0 && indexOfEquals < definition.length() - 1)) {
         throw new ConfigurationException(
-            "Syntax error in error page mapping: No equals found in text: " + definition);
+            "Syntax error in error page mapping: No equals, code or mapping found: " + definition);
       }
 
       String mappedValue = definition.substring(0, indexOfEquals);
