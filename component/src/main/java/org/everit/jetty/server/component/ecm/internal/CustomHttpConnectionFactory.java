@@ -25,7 +25,7 @@ import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.everit.osgi.jetty.server.ReferencedEndPointsCloseable;
+import org.everit.jetty.server.ReferencedEndPointsCloseable;
 
 /**
  * A {@link HttpConnectionFactory} that provides connections in the way that remembers all

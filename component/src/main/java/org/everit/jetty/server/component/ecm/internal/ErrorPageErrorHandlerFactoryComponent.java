@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
+import org.everit.jetty.server.ErrorHandlerFactory;
 import org.everit.jetty.server.component.ecm.ErrorPageErrorHandlerFactoryConstants;
 import org.everit.jetty.server.component.ecm.PriorityConstants;
 import org.everit.osgi.ecm.annotation.Component;
@@ -32,7 +33,6 @@ import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.ErrorHandlerFactory;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;

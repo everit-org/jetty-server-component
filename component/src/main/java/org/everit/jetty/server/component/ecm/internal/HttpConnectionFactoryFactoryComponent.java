@@ -25,6 +25,7 @@ import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConfiguration.Customizer;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.everit.jetty.server.ConnectionFactoryFactory;
 import org.everit.jetty.server.component.ecm.HttpConnectionFactoryFactoryConstants;
 import org.everit.jetty.server.component.ecm.PriorityConstants;
 import org.everit.osgi.ecm.annotation.Component;
@@ -37,7 +38,6 @@ import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;

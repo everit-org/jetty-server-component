@@ -21,6 +21,7 @@ import java.security.KeyStore;
 import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.everit.jetty.server.ConnectionFactoryFactory;
 import org.everit.jetty.server.component.ecm.PriorityConstants;
 import org.everit.jetty.server.component.ecm.SslConnectionFactoryFactoryConstants;
 import org.everit.osgi.ecm.annotation.Activate;
@@ -32,7 +33,6 @@ import org.everit.osgi.ecm.annotation.attribute.PasswordAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.ConnectionFactoryFactory;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 

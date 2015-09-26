@@ -32,6 +32,7 @@ import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.everit.jetty.server.SessionHandlerFactory;
 import org.everit.jetty.server.component.ecm.HashSessionHandlerFactoryConstants;
 import org.everit.jetty.server.component.ecm.PriorityConstants;
 import org.everit.jetty.server.component.ecm.SessionHandlerConstants;
@@ -46,7 +47,6 @@ import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-import org.everit.osgi.jetty.server.SessionHandlerFactory;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.annotation.headers.ProvideCapability;

@@ -25,7 +25,7 @@ import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.everit.osgi.jetty.server.ReferencedEndPointsCloseable;
+import org.everit.jetty.server.ReferencedEndPointsCloseable;
 
 /**
  * {@link SslConnectionFactory} that implements {@link ReferencedEndPointsCloseable}.
