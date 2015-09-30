@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
     Copyright (C) 2011 Everit Kft. (http://www.everit.org)
@@ -22,8 +21,8 @@
     <version>7.0.1</version>
   </parent>
 
-  <groupId>org.everit.jetty.server.component</groupId>
-  <artifactId>org.everit.jetty.server.component.ecm.parent</artifactId>
+  <groupId>org.everit.jetty</groupId>
+  <artifactId>org.everit.jetty.server.ecm.parent</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 
   <packaging>pom</packaging>

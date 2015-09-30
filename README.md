@@ -1,4 +1,4 @@
-# jetty-server-component
+# jetty-server-ecm
 Configurable components to be able to start one ore more Server instances.
 
 The attributes and references of the components can be changed dynamically

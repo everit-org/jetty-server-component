@@ -16,21 +16,21 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.everit.jetty.server.component</groupId>
-    <artifactId>org.everit.jetty.server.component.ecm.parent</artifactId>
+    <groupId>org.everit.jetty</groupId>
+    <artifactId>org.everit.jetty.server.ecm.parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.everit.jetty</groupId>
-  <artifactId>org.everit.jetty.server.component.ecm.tests</artifactId>
+  <artifactId>org.everit.jetty.server.ecm.tests</artifactId>
   <version>1.0.0-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 
-  <name>Everit - Jetty Server Component Tests</name>
+  <name>Everit - Jetty Server ECM Tests</name>
 
   <properties>
-    <projectpath>jetty-server-component-ecm</projectpath>
+    <projectpath>jetty-server-ecm</projectpath>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <baselining.baseline.skip>true</baselining.baseline.skip>
@@ -88,7 +88,7 @@
       <plugin>
         <groupId>org.everit.osgi.dev</groupId>
         <artifactId>eosgi-maven-plugin</artifactId>
-        <version>3.2.1</version>
+        <version>3.3.0</version>
         <executions>
           <execution>
             <id>integration-test</id>
@@ -141,7 +141,7 @@
   <dependencies>
     <dependency>
       <groupId>org.everit.jetty</groupId>
-      <artifactId>org.everit.jetty.server.component.ecm</artifactId>
+      <artifactId>org.everit.jetty.server.ecm</artifactId>
       <version>1.0.0-SNAPSHOT</version>
     </dependency>
 
