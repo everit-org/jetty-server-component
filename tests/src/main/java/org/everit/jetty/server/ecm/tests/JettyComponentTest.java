@@ -15,7 +15,6 @@
  */
 package org.everit.jetty.server.ecm.tests;
 
-import org.everit.osgi.dev.testrunner.TestDuringDevelopment;
 import org.everit.osgi.dev.testrunner.TestRunnerConstants;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.Service;
@@ -27,7 +26,7 @@ import org.junit.Test;
 import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
- * Test component that tests functionlity.
+ * Test component that tests functionality.
  */
 @Component
 @Service()
@@ -41,7 +40,6 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 public class JettyComponentTest {
 
   @Test
-  @TestDuringDevelopment
   public void testSimpleHttpPort() {
 
   }
