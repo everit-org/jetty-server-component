@@ -28,7 +28,6 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.everit.jetty.server.ConnectionFactoryFactory;
 import org.everit.jetty.server.NetworkConnectorFactory;
 import org.everit.jetty.server.ReferencedEndPointsCloseable;
-import org.everit.jetty.server.ecm.PriorityConstants;
 import org.everit.jetty.server.ecm.ServerConnectorFactoryConstants;
 import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
@@ -57,6 +56,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
+        priority = ServerConnectorFactoryAttributePriority.P01_SERVICE_DESCRIPTION,
         label = "Service description",
         description = "Optional description for Server Connector Factory instance.") })
 @Service
@@ -152,7 +152,8 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
    * Setter that also updates the property on the connector without restarting it.
    */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_ACCEPTOR_PRIORITY_DELTA,
-      defaultValue = 0, dynamic = true, priority = PriorityConstants.PRIORITY_08,
+      defaultValue = 0, dynamic = true,
+      priority = ServerConnectorFactoryAttributePriority.P09_ACCEPTOR_PRIORITY_DELTA,
       label = "Acceptor thread priority delta",
       description = "This allows the acceptor thread to run at a different priority. Typically "
           + "this would be used to lower the priority to give preference to handling previously "
@@ -169,7 +170,8 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
    * Setter that also updates the property on the connector without restarting it.
    */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_ACCEPT_QUEUE_SIZE,
-      defaultValue = 0, priority = PriorityConstants.PRIORITY_05, label = "Accept queue size",
+      defaultValue = 0, priority = ServerConnectorFactoryAttributePriority.P06_ACCEPT_QUEUE_SIZE,
+      label = "Accept queue size",
       description = "The accept queue size (also known as accept backlog).")
   public synchronized void setAcceptQueueSize(final int acceptQueueSize) {
     this.acceptQueueSize = acceptQueueSize;
@@ -180,7 +182,8 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
    */
   @ServiceRef(
       referenceId = ServerConnectorFactoryConstants.ATTR_CONNECTION_FACTORY_FACTORIES,
-      dynamic = true, optional = true, attributePriority = PriorityConstants.PRIORITY_01,
+      dynamic = true, optional = true,
+      attributePriority = ServerConnectorFactoryAttributePriority.P02_CONNECTION_FACTORY_FACTORIES,
       label = "ConnectionFactory factories (target)",
       description = "OSGi filter expressions that point to OSGi services that implement the "
           + "ConnectionFactoryFactory interface. In case no service reference is specified, a "
@@ -204,7 +207,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
    */
   @LongAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_IDLE_TIMEOUT,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_IDLE_TIMEOUT, dynamic = true,
-      priority = PriorityConstants.PRIORITY_02, label = "Idle timeout",
+      priority = ServerConnectorFactoryAttributePriority.P03_IDLE_TIMEOUT, label = "Idle timeout",
       description = "Sets the maximum Idle time for a connection. This value is interpreted as "
           + "the maximum time between some progress being made on the connection. So if a single "
           + "byte is read or written, then the timeout is reset.")
@@ -219,7 +222,8 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   @BooleanAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_INHERIT_CHANNEL,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_INHERIT_CHANNEL,
-      priority = PriorityConstants.PRIORITY_06, label = "Inherit channel",
+      priority = ServerConnectorFactoryAttributePriority.P07_INHERIT_CHANNEL,
+      label = "Inherit channel",
       description = "Whether this connector uses a channel inherited from the JVM. If true, the "
           + "connector first tries to inherit from a channel provided by the system. If there is "
           + "no inherited channel available, or if the inherited channel is not usable, then it "
@@ -232,14 +236,14 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_LINGER_TIME,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_LINGER_TIME,
-      priority = PriorityConstants.PRIORITY_07, label = "Linger time",
+      priority = ServerConnectorFactoryAttributePriority.P08_LINGER_TIME, label = "Linger time",
       description = "The linger time. Use -1 to disable.")
   public void setLingerTime(final int lingerTime) {
     this.lingerTime = lingerTime;
   }
 
   @StringAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_NAME, optional = true,
-      priority = PriorityConstants.PRIORITY_03, label = "Name",
+      priority = ServerConnectorFactoryAttributePriority.P04_NAME, label = "Name",
       description = "Set a connector name. A context may be configured with virtual hosts in the "
           + "form \"@contextname\" and will only serve requests from the named connector.")
   public void setName(final String name) {
@@ -248,7 +252,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   @BooleanAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_REUSE_ADDRESS,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_REUSE_ADDRESS,
-      priority = PriorityConstants.PRIORITY_04, label = "Reuse address",
+      priority = ServerConnectorFactoryAttributePriority.P05_REUSE_ADDRESS, label = "Reuse address",
       description = "Whether the server socket reuses addresses.")
   public void setReuseAddress(final boolean reuseAddress) {
     this.reuseAddress = reuseAddress;
@@ -259,7 +263,9 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
    */
   @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_SELECTOR_PRIORITY_DELTA,
       defaultValue = ServerConnectorFactoryConstants.DEFAULT_SELECTOR_PRIORITY_DELTA,
-      dynamic = true, priority = PriorityConstants.PRIORITY_09, label = "Selector priority delta",
+      dynamic = true,
+      priority = ServerConnectorFactoryAttributePriority.P10_SELECTOR_PRIORITY_DELTA,
+      label = "Selector priority delta",
       description = "Sets the selector thread priority delta to the given amount. This allows the "
           + "selector threads to run at a different priority. Typically this would be used to "
           + "lower the priority to give preference to handling previously accepted connections "

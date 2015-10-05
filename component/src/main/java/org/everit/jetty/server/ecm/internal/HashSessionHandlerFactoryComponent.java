@@ -34,7 +34,6 @@ import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.everit.jetty.server.SessionHandlerFactory;
 import org.everit.jetty.server.ecm.HashSessionHandlerFactoryConstants;
-import org.everit.jetty.server.ecm.PriorityConstants;
 import org.everit.jetty.server.ecm.SessionHandlerConstants;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
@@ -62,6 +61,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
+        priority = HashSessionHandlerFactoryAttributePriority.P01_SERVICE_DESCRIPTION,
         label = "Service description",
         description = "Optional description for SessionHandler Factory service.") })
 @Service
@@ -214,7 +214,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_CHECKING_REMOTE_SESSION_ID_ENCODING,
       defaultValue = SessionHandlerConstants.DEFAULT_CHECKING_REMOTE_SESSION_ID_ENCODING,
-      priority = PriorityConstants.PRIORITY_11, label = "Checking remote session id encoding",
+      priority = HashSessionHandlerFactoryAttributePriority.P12_CHECKING_REMOTE_SESSION_ID_ENCODING,
+      label = "Checking remote session id encoding",
       description = "True if absolute URLs are check for remoteness before being session encoded.")
   public void setCheckingRemoteSessionIdEncoding(final boolean checkingRemoteSessionIdEncoding) {
     this.checkingRemoteSessionIdEncoding = checkingRemoteSessionIdEncoding;
@@ -222,7 +223,7 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @StringAttribute(attributeId = SessionHandlerConstants.ATTR_COOKIE_NAME,
       defaultValue = SessionManager.__DefaultSessionCookie,
-      priority = PriorityConstants.PRIORITY_07, label = "Cookie name",
+      priority = HashSessionHandlerFactoryAttributePriority.P08_COOKIE_NAME, label = "Cookie name",
       description = "The name of the cookie.")
   public void setCookieName(final String cookieName) {
     this.cookieName = cookieName;
@@ -230,7 +231,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_DELETE_UNRESTORABLE_SESSIONS,
       defaultValue = SessionHandlerConstants.DEFAULT_DELETE_UNRESTORABLE_SESSIONS,
-      priority = PriorityConstants.PRIORITY_14, label = "Delete unrestorable sessions",
+      priority = HashSessionHandlerFactoryAttributePriority.P15_DELETE_UNRESTORABLE_SESSIONS,
+      label = "Delete unrestorable sessions",
       description = "")
   public void setDeleteUnrestorableSessions(final boolean deleteUnrestorableSessions) {
     this.deleteUnrestorableSessions = deleteUnrestorableSessions;
@@ -238,14 +240,16 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_HTTP_ONLY,
       defaultValue = SessionHandlerConstants.DEFAULT_HTTP_ONLY,
-      priority = PriorityConstants.PRIORITY_15, label = "HTTP only", description = "")
+      priority = HashSessionHandlerFactoryAttributePriority.P16_HTTP_ONLY, label = "HTTP only",
+      description = "")
   public void setHttpOnly(final boolean httpOnly) {
     this.httpOnly = httpOnly;
   }
 
   @IntegerAttribute(attributeId = SessionHandlerConstants.ATTR_IDLE_SAVE_PERIOD,
       defaultValue = SessionHandlerConstants.DEFAULT_IDLE_SAVE_PERIOD,
-      priority = PriorityConstants.PRIORITY_16, label = "Idle save period",
+      priority = HashSessionHandlerFactoryAttributePriority.P17_IDLE_SAVE_PERIOD,
+      label = "Idle save period",
       description = "Configures the period in seconds after which a session is deemed idle and "
           + "saved to save on session memory. The session is persisted, the values attribute map "
           + "is cleared and the session set to idled.")
@@ -254,7 +258,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   }
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_LAZY_LOAD,
-      defaultValue = SessionHandlerConstants.DEFAULT_LAZY_LOAD, label = "Lazy load",
+      defaultValue = SessionHandlerConstants.DEFAULT_LAZY_LOAD,
+      priority = HashSessionHandlerFactoryAttributePriority.P23_LAZY_LOAD, label = "Lazy load",
       description = "Restore sessions lazily.")
   public void setLazyLoad(final boolean lazyLoad) {
     this.lazyLoad = lazyLoad;
@@ -265,7 +270,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
    */
   @IntegerAttribute(attributeId = SessionHandlerConstants.ATTR_MAX_INACTIVE_INTERVAL,
       defaultValue = SessionHandlerConstants.DEFAULT_MAX_INACTIVE_INTERVAL, dynamic = true,
-      priority = PriorityConstants.PRIORITY_01, label = "Max inactive interval",
+      priority = HashSessionHandlerFactoryAttributePriority.P02_MAX_INACTIVE_INTERVAL,
+      label = "Max inactive interval",
       description = "The max period of inactivity, after which the session is invalidated, "
           + "in seconds.")
   public synchronized void setMaxInactiveInterval(final int maxInactiveInterval) {
@@ -277,7 +283,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_NODE_IN_SESSION_ID,
       defaultValue = SessionHandlerConstants.DEFAULT_NODE_IN_SESSION_ID,
-      priority = PriorityConstants.PRIORITY_17, label = "Node in session id",
+      priority = HashSessionHandlerFactoryAttributePriority.P18_NODE_IN_SESSION_ID,
+      label = "Node in session id",
       description = "Wether the cluster node id (worker id) will be returned as part of the "
           + "session id by HttpSession.getId() or not.")
   public void setNodeIdInSessionId(final boolean nodeIdInSessionId) {
@@ -285,7 +292,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   }
 
   @ServiceRef(referenceId = SessionHandlerConstants.ATTR_RANDOM, optional = true,
-      attributePriority = PriorityConstants.PRIORITY_21, label = "Random (target)",
+      attributePriority = HashSessionHandlerFactoryAttributePriority.P22_RANDOM,
+      label = "Random (target)",
       description = "The random number generator for generating Session Ids.")
   public void setRandom(final Random random) {
     this.random = random;
@@ -293,7 +301,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @IntegerAttribute(attributeId = SessionHandlerConstants.ATTR_REFRESH_COOKIE_AGE,
       defaultValue = SessionHandlerConstants.DEFAULT_REFRESH_COOKIE_AGE,
-      priority = PriorityConstants.PRIORITY_18, label = "Refresh cookie age",
+      priority = HashSessionHandlerFactoryAttributePriority.P19_REFRESH_COOKIE_AGE,
+      label = "Refresh cookie age",
       description = "Time before a session cookie is re-set in seconds.")
   public void setRefreshCookieAge(final int refreshCookieAge) {
     this.refreshCookieAge = refreshCookieAge;
@@ -301,7 +310,7 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @LongAttribute(attributeId = SessionHandlerConstants.ATTR_RESEED,
       defaultValue = SessionHandlerConstants.DEFAULT_RESEED,
-      priority = PriorityConstants.PRIORITY_20, label = "Reseed",
+      priority = HashSessionHandlerFactoryAttributePriority.P21_RESEED, label = "Reseed",
       description = "If non zero then when a random long modulo the reseed value == 1, "
           + "the SecureRandom will be reseeded.")
   public void setReseed(final long reseed) {
@@ -310,7 +319,7 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @IntegerAttribute(attributeId = SessionHandlerConstants.ATTR_SAVE_PERIOD,
       defaultValue = SessionHandlerConstants.DEFAULT_SAVE_PERIOD,
-      priority = PriorityConstants.PRIORITY_12, label = "Save period",
+      priority = HashSessionHandlerFactoryAttributePriority.P13_SAVE_PERIOD, label = "Save period",
       description = "The period is seconds at which sessions are periodically saved to disk. "
           + "Zero means never save.")
   public void setSavePeriod(final int savePeriod) {
@@ -319,7 +328,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @IntegerAttribute(attributeId = SessionHandlerConstants.ATTR_SCAVENGE_PERIOD,
       defaultValue = SessionHandlerConstants.DEFAULT_SCAVENGE_PERIOD,
-      priority = PriorityConstants.PRIORITY_19, label = "Scavenge period",
+      priority = HashSessionHandlerFactoryAttributePriority.P20_SCAVENGE_PERIOD,
+      label = "Scavenge period",
       description = "The period in seconds at which a check is made for sessions to be "
           + "invalidated.")
   public void setScavengePeriod(final int scavengePeriod) {
@@ -328,7 +338,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_SECURE_REQUEST_ONLY,
       defaultValue = SessionHandlerConstants.DEFAULT_SECURE_REQUEST_ONLY,
-      priority = PriorityConstants.PRIORITY_05, label = "Secure request only",
+      priority = HashSessionHandlerFactoryAttributePriority.P06_SECURE_REQUEST_ONLY,
+      label = "Secure request only",
       description = "HTTPS request. Can be overridden by setting "
           + "SessionCookieConfig.setSecure(true), in which case the session cookie will be marked "
           + "as secure on both HTTPS and HTTP.")
@@ -337,7 +348,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   }
 
   @ServiceRef(referenceId = SessionHandlerConstants.ATTR_SESSION_ATTRIBUTE_LISTENERS,
-      optional = true, attributePriority = PriorityConstants.PRIORITY_03,
+      optional = true,
+      attributePriority = HashSessionHandlerFactoryAttributePriority.P04_SESSION_ATTRIBUTE_LISTENERS, // CS_DISABLE_LINE_LENGTH
       label = "Session attribute listeners (target)",
       description = "Zero or more filter expression for HttpSessionAttributeListener services")
   public void setSessionAttributeListeners(
@@ -346,7 +358,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   }
 
   @ServiceRef(referenceId = SessionHandlerConstants.ATTR_SESSION_ID_LISTENERS,
-      optional = true, attributePriority = PriorityConstants.PRIORITY_04,
+      optional = true,
+      attributePriority = HashSessionHandlerFactoryAttributePriority.P05_SESSION_ID_LISTENERS,
       label = "Session Id listeners (target)",
       description = "Zero or more filter expression for HttpSessionIdListener services")
   public void setSessionIdListeners(final HttpSessionIdListener[] sessionIdListeners) {
@@ -355,7 +368,8 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @StringAttribute(attributeId = SessionHandlerConstants.SESSION_ID_PARAMETER_NAME,
       defaultValue = SessionManager.__DefaultSessionIdPathParameterName,
-      priority = PriorityConstants.PRIORITY_09, label = "Session id parameter name",
+      priority = HashSessionHandlerFactoryAttributePriority.P10_SESSION_ID_PARAMETER_NAME,
+      label = "Session id parameter name",
       description = "The URL path parameter name for session id URL rewriting "
           + "(\"none\" for no rewriting).")
   public void setSessionIdParameterName(final String sessionIdParameterName) {
@@ -363,14 +377,16 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   }
 
   @ServiceRef(referenceId = SessionHandlerConstants.ATTR_SESSION_LISTENERS, optional = true,
-      attributePriority = PriorityConstants.PRIORITY_02, label = "Session listeners (target)",
+      attributePriority = HashSessionHandlerFactoryAttributePriority.P03_SESSION_LISTENERS,
+      label = "Session listeners (target)",
       description = "Zero or more filter expression for HttpSessionListener services.")
   public void setSessionListeners(final HttpSessionListener[] sessionListeners) {
     this.sessionListeners = sessionListeners;
   }
 
   @StringAttribute(attributeId = SessionHandlerConstants.ATTR_STORE_DIRECTORY, optional = true,
-      priority = PriorityConstants.PRIORITY_13, label = "Store directory",
+      priority = HashSessionHandlerFactoryAttributePriority.P14_STORE_DIRECTORY,
+      label = "Store directory",
       description = "Path to the directory where sessions should be stored.")
   public void setStoreDirectory(final String storeDirectory) {
     this.storeDirectory = storeDirectory;
@@ -378,20 +394,22 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_USING_COOKIES,
       defaultValue = SessionHandlerConstants.DEFAULT_USING_COOKIES,
-      priority = PriorityConstants.PRIORITY_06, label = "Using cookies")
+      priority = HashSessionHandlerFactoryAttributePriority.P07_USING_COOKIES,
+      label = "Using cookies")
   public void setUsingCookies(final boolean usingCookies) {
     this.usingCookies = usingCookies;
   }
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_USING_URLS,
       defaultValue = SessionHandlerConstants.DEFAULT_USING_URLS,
-      priority = PriorityConstants.PRIORITY_08, label = "Using URLs", description = "")
+      priority = HashSessionHandlerFactoryAttributePriority.P09_USING_URLS, label = "Using URLs",
+      description = "")
   public void setUsingURLs(final boolean usingURLs) {
     this.usingURLs = usingURLs;
   }
 
   @StringAttribute(attributeId = SessionHandlerConstants.ATTR_WORKER_NAME, optional = true,
-      priority = PriorityConstants.PRIORITY_10, label = "Worker name",
+      priority = HashSessionHandlerFactoryAttributePriority.P11_WORKER_NAME, label = "Worker name",
       description = "If set, the workername is dot appended to the session ID and can be used to "
           + "assist session affinity in a load balancer. A worker name starting with $ is used as "
           + "a request attribute name to lookup the worker name that can be dynamically set by a "
