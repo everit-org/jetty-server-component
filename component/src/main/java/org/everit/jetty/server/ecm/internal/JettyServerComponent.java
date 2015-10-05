@@ -32,7 +32,6 @@ import org.everit.jetty.server.NetworkConnectorFactory;
 import org.everit.jetty.server.ServletContextHandlerFactory;
 import org.everit.jetty.server.ecm.JettyServerConstants;
 import org.everit.jetty.server.ecm.JettyServerException;
-import org.everit.jetty.server.ecm.PriorityConstants;
 import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
@@ -64,7 +63,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
-        label = "Service description",
+        priority = JettyServerComponent.P01_SERVICE_DESCRIPTION, label = "Service description",
         description = "Optional description for the instantiated Jetty server.") })
 @ManualService({ Server.class })
 public class JettyServerComponent {
@@ -219,6 +218,12 @@ public class JettyServerComponent {
     }
 
   }
+
+  public static final int P01_SERVICE_DESCRIPTION = 1;
+
+  public static final int P02_NETWORK_CONNECTOR_FACTORIES = 2;
+
+  public static final int P03_SERVLET_CONTEXT_HANDLER_FACTORIES = 3;
 
   private CustomContextHandlerCollection contextHandlerCollection;
 
@@ -380,7 +385,7 @@ public class JettyServerComponent {
 
   @ServiceRef(referenceId = JettyServerConstants.ATTR_NETWORK_CONNECTOR_FACTORIES,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true,
-      attributePriority = PriorityConstants.PRIORITY_01,
+      attributePriority = P02_NETWORK_CONNECTOR_FACTORIES,
       label = "NetworkConnector Factories (clause)",
       description = "Zero or more clauses to install Network Connectors based on their factory "
           + "services. Supported attributes: host, port.")
@@ -391,7 +396,7 @@ public class JettyServerComponent {
 
   @ServiceRef(referenceId = JettyServerConstants.ATTR_SERVLET_CONTEXT_HANDLER_FACTORIES,
       configurationType = ReferenceConfigurationType.CLAUSE, dynamic = true,
-      attributePriority = PriorityConstants.PRIORITY_02,
+      attributePriority = P03_SERVLET_CONTEXT_HANDLER_FACTORIES,
       label = "ServletContextHandler Factories (clause)",
       description = "Zero or more clauses to install Servlet Contexts based on their factory "
           + "services. Supported attributes: contextPath")
