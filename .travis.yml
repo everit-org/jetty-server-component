@@ -1,5 +1,5 @@
 language: java
 jdk:
-  - oraclejdk7
+  - openjdk8
 script: mvn install
 install: true
