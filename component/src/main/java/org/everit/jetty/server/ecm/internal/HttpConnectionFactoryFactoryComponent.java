@@ -56,12 +56,11 @@ import aQute.bnd.annotation.headers.ProvideCapability;
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
         label = "Service description",
         description = "Optional description for the instantiated HttpConnectionFactory Factory.") })
-
 @Service
 public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryFactory {
 
   private final WeakHashMap<CustomHttpConnectionFactory, Boolean> activeConnectionFactories =
-      new WeakHashMap<>(); // CS_DISABLE_LINE_LENGTH
+      new WeakHashMap<>();
 
   private boolean closeAllEndpointsAfterDynamicUpdate = false;
 

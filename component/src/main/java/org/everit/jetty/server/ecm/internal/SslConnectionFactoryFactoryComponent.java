@@ -71,7 +71,6 @@ public class SslConnectionFactoryFactoryComponent implements ConnectionFactoryFa
   @Activate
   public void activate(final BundleContext pBundleContext) {
     bundleContext = pBundleContext;
-
   }
 
   @Override

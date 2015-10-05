@@ -25,6 +25,7 @@ import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Deactivate;
+import org.everit.osgi.ecm.annotation.ManualService;
 import org.everit.osgi.ecm.component.ComponentContext;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
 import org.osgi.framework.ServiceRegistration;
@@ -44,6 +45,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
         + "Requirements.")
 @ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
     value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@ManualService({ Customizer.class, SecureRequestCustomizer.class })
 public class SecureRequestCustomizerComponent {
 
   private ServiceRegistration<?> serviceRegistration;
