@@ -1,3 +1,3 @@
 # jetty-server-ecm
 
-Documentation: http://wwww.everit.org/jetty-server-ecm
+Documentation: http://www.everit.org/jetty-server-ecm
