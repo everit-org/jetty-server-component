@@ -15,12 +15,33 @@
  */
 package org.everit.jetty.server.ecm.tests;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.NetworkConnector;
+import org.eclipse.jetty.server.Server;
 import org.everit.osgi.dev.testrunner.TestRunnerConstants;
+import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.Service;
+import org.everit.osgi.ecm.annotation.ServiceRef;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
+import org.everit.osgi.ecm.component.ConfigurationException;
 import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.json.JSONObject;
+import org.junit.Assert;
 import org.junit.Test;
 
 import aQute.bnd.annotation.headers.ProvideCapability;
@@ -39,8 +60,109 @@ import aQute.bnd.annotation.headers.ProvideCapability;
         defaultValue = "junit4") })
 public class JettyComponentTest {
 
+  private static HttpURLConnection openConnection(final URL url) throws IOException {
+    URLConnection urlConnection = url.openConnection();
+    if (!(urlConnection instanceof HttpURLConnection)) {
+      throw new RuntimeException("urlConnection should be instasnce of HttpUrlConnection");
+    }
+    return (HttpURLConnection) urlConnection;
+  }
+
+  private static String readResponseFromUrlConnection(final HttpURLConnection urlConnection)
+      throws IOException {
+    urlConnection.connect();
+    InputStream inputStream = urlConnection.getInputStream();
+    StringBuilder sb = new StringBuilder();
+    try (BufferedReader reader =
+        new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+      boolean first = true;
+      String line = reader.readLine();
+      while (line != null) {
+        if (!first) {
+          sb.append("\n");
+        }
+        sb.append(line);
+        line = reader.readLine();
+      }
+    }
+    return sb.toString();
+  }
+
+  private int port = 0;
+
+  private Server server;
+
+  /**
+   * Sets the port where the server listens on.
+   */
+  @Activate
+  public void activate() {
+    Connector[] connectors = server.getConnectors();
+    if (connectors.length == 0) {
+      throw new ConfigurationException("At least on network connector should be available");
+    }
+    Integer foundPort = null;
+    for (int i = 0; i < connectors.length && foundPort == null; i++) {
+      Connector connector = connectors[i];
+      if (!(connector instanceof NetworkConnector)) {
+        throw new ConfigurationException("Connector must be an instance of network connector");
+      }
+      @SuppressWarnings("resource")
+      NetworkConnector networkConnector = (NetworkConnector) connector;
+      List<String> protocols = networkConnector.getProtocols();
+      if (!protocols.contains("ssl")) {
+        foundPort = networkConnector.getLocalPort();
+      }
+    }
+
+    if (foundPort == null) {
+      throw new ConfigurationException("No simple http network connector found");
+    }
+    this.port = foundPort;
+
+  }
+
+  private JSONObject readJSONResponse(final HttpURLConnection urlConnection) throws IOException {
+    String response = readResponseFromUrlConnection(urlConnection);
+    JSONObject jsonObject = new JSONObject(response);
+    return jsonObject;
+  }
+
+  @ServiceRef(defaultValue = "(ecm.component.id=org.everit.jetty.server.ecm.JettyServer)")
+  public void setServer(final Server server) {
+    this.server = server;
+  }
+
   @Test
-  public void testSimpleHttpPort() {
+  public void testForwardRequestCustomizer() {
+    try {
+      InetAddress localHost = InetAddress.getLocalHost();
+      URL url = new URL("http://" + localHost.getHostName() + ":" + port + "/sample/echoremote");
+      HttpURLConnection urlConnection = openConnection(url);
+      JSONObject jsonObject = readJSONResponse(urlConnection);
+      Assert.assertEquals(localHost.getHostName(), jsonObject.getString("serverName"));
+      Assert.assertEquals(String.valueOf(port), jsonObject.get("serverPort").toString());
+
+      final String testClientName = "11.11" + ".11.11";
+      final String testServerName = "mytest.com";
+      final int testServerPort = 888;
+
+      urlConnection = openConnection(url);
+      urlConnection.setRequestProperty(HttpHeader.X_FORWARDED_FOR.asString(), testClientName);
+
+      urlConnection.setRequestProperty(HttpHeader.X_FORWARDED_HOST.asString(),
+          testServerName + ":" + testServerPort);
+      urlConnection.setRequestProperty(HttpHeader.X_FORWARDED_PROTO.asString(), "https");
+
+      jsonObject = readJSONResponse(urlConnection);
+      Assert.assertEquals(testClientName, jsonObject.getString("remoteAddr"));
+      Assert.assertEquals(testServerName, jsonObject.getString("serverName"));
+      Assert.assertEquals(String.valueOf(testServerPort), jsonObject.get("serverPort").toString());
+      Assert.assertEquals(true, Boolean.valueOf(jsonObject.get("secure").toString()));
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
 
   }
 }

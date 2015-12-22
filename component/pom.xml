@@ -18,12 +18,12 @@
   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
-    <version>7.0.1</version>
+    <version>7.2.0</version>
   </parent>
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>1.0.0</version>
+  <version>1.2.0</version>
 
   <packaging>bundle</packaging>
 
@@ -32,8 +32,8 @@
 
   <properties>
     <projectpath>jetty-server-ecm</projectpath>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <licenses>

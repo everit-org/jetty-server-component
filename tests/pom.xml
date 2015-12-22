@@ -21,9 +21,8 @@
     <version>1.0.0</version>
   </parent>
 
-  <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm.tests</artifactId>
-  <version>1.0.0</version>
+  <version>1.2.0</version>
 
   <packaging>bundle</packaging>
 
@@ -100,7 +99,8 @@
         <configuration>
           <jacoco>
             <includes>org.everit.osgi.jetty.server.component.*</includes>
-            <output>$${ if (System.getenv("EOSGI_STOP_AFTER_TESTS").equals("true")) "file"; else "tcpserver"; }</output>
+            <output>$${ if (System.getenv("EOSGI_STOP_AFTER_TESTS").equals("true")) "file"; else
+              "tcpserver"; }</output>
           </jacoco>
           <environments>
             <environment>
@@ -154,6 +154,12 @@
       <groupId>org.everit.osgi</groupId>
       <artifactId>org.everit.osgi.ecm.extender.ri</artifactId>
       <version>2.0.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.everit.osgi</groupId>
+      <artifactId>org.everit.osgi.ecm.component.ri</artifactId>
+      <version>2.0.2</version>
     </dependency>
 
     <dependency>

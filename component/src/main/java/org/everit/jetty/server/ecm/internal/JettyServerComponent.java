@@ -81,7 +81,7 @@ public class JettyServerComponent {
 
     public final ServiceReference<NetworkConnectorFactory> serviceReference;
 
-    public ConnectorFactoryKey(final ServiceHolder<NetworkConnectorFactory> serviceHolder,
+    ConnectorFactoryKey(final ServiceHolder<NetworkConnectorFactory> serviceHolder,
         final String host, final int port) {
       serviceReference = serviceHolder.getReference();
       connectorId = serviceHolder.getReferenceId();
@@ -154,7 +154,7 @@ public class JettyServerComponent {
 
     public final ServletContextHandler handler;
 
-    public ContextWithPath(final ServletContextHandler handler,
+    ContextWithPath(final ServletContextHandler handler,
         final String contextPath) {
       this.handler = handler;
       this.contextPath = contextPath;
@@ -171,7 +171,7 @@ public class JettyServerComponent {
 
     public final ServiceReference<ServletContextHandlerFactory> serviceReference;
 
-    public ServletContextFactoryKey(
+    ServletContextFactoryKey(
         final ServiceHolder<ServletContextHandlerFactory> serviceHolder) {
       serviceReference = serviceHolder.getReference();
       contextId = serviceHolder.getReferenceId();

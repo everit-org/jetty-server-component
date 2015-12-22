@@ -63,7 +63,7 @@ public class ErrorPageErrorHandlerFactoryComponent implements ErrorHandlerFactor
 
     public int to;
 
-    public CodeRange(final int from, final int to) {
+    CodeRange(final int from, final int to) {
       this.from = from;
       this.to = to;
     }
