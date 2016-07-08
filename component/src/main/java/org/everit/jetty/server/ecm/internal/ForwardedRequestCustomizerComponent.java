@@ -25,28 +25,26 @@ import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Deactivate;
 import org.everit.osgi.ecm.annotation.ManualService;
+import org.everit.osgi.ecm.annotation.ManualServices;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ComponentContext;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
  * Component that wraps {@link ForwardedRequestCustomizer} and registers it as an OSGi service.
  */
+@ExtendComponent
 @Component(componentId = ForwardedRequestCustomizerConstants.SERVICE_FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     label = "Everit Jetty Forwarded Request Customizer")
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
         label = "Service description",
         description = "Optional description for Forwarded Request Customizer instance.") })
-@ManualService(Customizer.class)
+@ManualServices(@ManualService(Customizer.class))
 public class ForwardedRequestCustomizerComponent {
 
   private String forwardedCipherSuite;

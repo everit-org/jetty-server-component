@@ -63,18 +63,15 @@ import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ServiceHolder;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.osgi.framework.Constants;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
  * ECM based configurable component that registers one or more instantiated
  * {@link ServletContextHandler} OSGi services. The component handles filter and servlet reference
  * changes dynamically.
  */
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@ExtendComponent
 @Component(componentId = ServletContextHandlerFactoryConstants.SERVICE_FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     label = "Everit Jetty ServletContextHandler Factory",

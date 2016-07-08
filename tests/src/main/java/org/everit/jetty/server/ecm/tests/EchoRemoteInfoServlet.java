@@ -27,18 +27,15 @@ import javax.servlet.ServletResponse;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Service;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.json.JSONObject;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
  * Send back the remoteHost, remoteAddr and remotePort values of the request separated by a
  * semicolon.
  */
+@ExtendComponent
 @Component(configurationPolicy = ConfigurationPolicy.IGNORE)
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @Service({ Servlet.class, EchoRemoteInfoServlet.class })
 public class EchoRemoteInfoServlet implements Servlet {
 

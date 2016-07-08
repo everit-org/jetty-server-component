@@ -36,21 +36,18 @@ import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
 import org.everit.osgi.ecm.annotation.attribute.IntegerAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.osgi.framework.Constants;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
  * ECM based configurable component that can start one or more {@link HttpConnectionFactory}s and
  * register them as OSGi services.
  */
+@ExtendComponent
 @Component(componentId = HttpConnectionFactoryFactoryConstants.SERVICE_FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     label = "Everit Jetty HttpConnectionFactory Factory",
     description = "Component to create HTTPConnectionFactory instances.")
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
         priority = HttpConnectionFactoryAttributePriority.P01_SERVICE_DESCRIPTION,

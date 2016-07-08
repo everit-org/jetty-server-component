@@ -26,16 +26,16 @@ import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Deactivate;
 import org.everit.osgi.ecm.annotation.ManualService;
+import org.everit.osgi.ecm.annotation.ManualServices;
 import org.everit.osgi.ecm.component.ComponentContext;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.osgi.framework.ServiceRegistration;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
  * A very simple component that registers a {@link SecureRequestCustomizer} instance as an OSGi
  * service.
  */
+@ExtendComponent
 @Component(componentId = SecureRequestCustomizerConstants.SERVICE_FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.IGNORE,
     label = "Everit Jetty Secure Request Customizer",
@@ -43,9 +43,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
         + "Customizer that extracts the attribute from an SSLContext and sets them on the request "
         + "with ServletRequest.setAttribute(String, Object) according to Servlet Specification "
         + "Requirements.")
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
-@ManualService({ Customizer.class, SecureRequestCustomizer.class })
+@ManualServices(@ManualService({ Customizer.class, SecureRequestCustomizer.class }))
 public class SecureRequestCustomizerComponent {
 
   private ServiceRegistration<?> serviceRegistration;

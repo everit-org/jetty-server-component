@@ -31,21 +31,18 @@ import org.everit.osgi.ecm.annotation.attribute.BooleanAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ConfigurationException;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.osgi.framework.Constants;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
 
 /**
  * Component that makes it possible to instantiate a pre-configured {@link ErrorPageErrorHandler}
  * and register it as an OSGi service.
  */
+@ExtendComponent
 @Component(componentId = ErrorPageErrorHandlerFactoryConstants.SERVICE_FACTORY_PID,
     configurationPolicy = ConfigurationPolicy.FACTORY,
     label = "Everit Jetty ErrorPage ErrorHandler Factory",
     description = "Configurable ErrorHandler Factory that forwards requests to error pages.")
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @StringAttributes({
     @StringAttribute(attributeId = Constants.SERVICE_DESCRIPTION, optional = true,
         priority = ErrorPageErrorHandlerFactoryAttributePriority.P01_SERVICE_DESCRIPTION,

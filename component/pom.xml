@@ -18,12 +18,12 @@
   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
-    <version>7.2.0</version>
+    <version>7.3.0</version>
   </parent>
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>1.2.0</version>
+  <version>2.0.0-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 
@@ -99,7 +99,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.3.v20150827</version>
+      <version>9.3.9.v20160517</version>
       <exclusions>
         <exclusion>
           <artifactId>javax.servlet-api</artifactId>
@@ -121,25 +121,19 @@
     </dependency>
 
     <dependency>
-      <groupId>biz.aQute.bnd</groupId>
-      <artifactId>biz.aQute.bndlib</artifactId>
-      <version>2.4.1</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.everit.osgi</groupId>
       <artifactId>org.everit.osgi.ecm.extender.api</artifactId>
-      <version>1.0.0</version>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.everit.osgi</groupId>
       <artifactId>org.everit.osgi.ecm.annotation</artifactId>
-      <version>2.1.0</version>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>org.everit.osgi</groupId>
       <artifactId>org.everit.osgi.ecm.component.api</artifactId>
-      <version>2.0.0</version>
+      <version>3.0.0</version>
     </dependency>
   </dependencies>
 

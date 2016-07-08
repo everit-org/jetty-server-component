@@ -28,16 +28,13 @@ import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
-
-import aQute.bnd.annotation.headers.ProvideCapability;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 
 /**
  * Simple servlet to test functionality.
  */
+@ExtendComponent
 @Component(configurationPolicy = ConfigurationPolicy.FACTORY)
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
 @Service
 public class HelloWorldServlet implements Servlet {
 
@@ -68,8 +65,11 @@ public class HelloWorldServlet implements Servlet {
 
     PrintWriter writer = res.getWriter();
 
-    writer.write("Hello " + name + "!\n");
-    writer.write("Is secure: " + req.isSecure());
+    writer.write("<html><body>");
+    writer.write("<p>Hello " + name + "!</p>");
+    writer.write("<p>Is secure: " + req.isSecure() + "</p>");
+    writer.write("<p>We are at the meetup!!!</p>");
+    writer.write("</body></html>");
 
   }
 

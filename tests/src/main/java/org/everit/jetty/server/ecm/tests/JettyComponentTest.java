@@ -34,25 +34,21 @@ import org.eclipse.jetty.server.Server;
 import org.everit.osgi.dev.testrunner.TestRunnerConstants;
 import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
-import org.everit.osgi.ecm.annotation.Service;
+import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
 import org.everit.osgi.ecm.annotation.ServiceRef;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
 import org.everit.osgi.ecm.component.ConfigurationException;
-import org.everit.osgi.ecm.extender.ECMExtenderConstants;
+import org.everit.osgi.ecm.extender.ExtendComponent;
 import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
-import aQute.bnd.annotation.headers.ProvideCapability;
-
 /**
  * Test component that tests functionality.
  */
-@Component
-@Service()
-@ProvideCapability(ns = ECMExtenderConstants.CAPABILITY_NS_COMPONENT,
-    value = ECMExtenderConstants.CAPABILITY_ATTR_CLASS + "=${@class}")
+@ExtendComponent
+@Component(configurationPolicy = ConfigurationPolicy.REQUIRE)
 @StringAttributes({
     @StringAttribute(attributeId = TestRunnerConstants.SERVICE_PROPERTY_TEST_ID,
         defaultValue = "JettyComponentTest"),
