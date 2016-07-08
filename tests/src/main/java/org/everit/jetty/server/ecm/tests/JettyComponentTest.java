@@ -35,6 +35,7 @@ import org.everit.osgi.dev.testrunner.TestRunnerConstants;
 import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
 import org.everit.osgi.ecm.annotation.ConfigurationPolicy;
+import org.everit.osgi.ecm.annotation.Service;
 import org.everit.osgi.ecm.annotation.ServiceRef;
 import org.everit.osgi.ecm.annotation.attribute.StringAttribute;
 import org.everit.osgi.ecm.annotation.attribute.StringAttributes;
@@ -48,12 +49,13 @@ import org.junit.Test;
  * Test component that tests functionality.
  */
 @ExtendComponent
-@Component(configurationPolicy = ConfigurationPolicy.REQUIRE)
+@Component(configurationPolicy = ConfigurationPolicy.IGNORE)
 @StringAttributes({
     @StringAttribute(attributeId = TestRunnerConstants.SERVICE_PROPERTY_TEST_ID,
         defaultValue = "JettyComponentTest"),
     @StringAttribute(attributeId = TestRunnerConstants.SERVICE_PROPERTY_TESTRUNNER_ENGINE_TYPE,
         defaultValue = "junit4") })
+@Service
 public class JettyComponentTest {
 
   private static HttpURLConnection openConnection(final URL url) throws IOException {
@@ -125,7 +127,8 @@ public class JettyComponentTest {
     return jsonObject;
   }
 
-  @ServiceRef(defaultValue = "(ecm.component.id=org.everit.jetty.server.ecm.JettyServer)")
+  @ServiceRef(
+      defaultValue = "(org.everit.osgi.ecm.component.id=org.everit.jetty.server.ecm.JettyServer)")
   public void setServer(final Server server) {
     this.server = server;
   }
