@@ -60,6 +60,9 @@ import org.osgi.framework.Constants;
 @Service
 public class ServerConnectorFactoryComponent implements NetworkConnectorFactory {
 
+  /**
+   * Default implementation of ConnectionFactory for the simplest HTTP calls.
+   */
   private static class DefaultConnectionFactoryFactory implements ConnectionFactoryFactory {
 
     @Override
@@ -198,7 +201,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   public synchronized void setConnectionFactoryFactories(
       final ConnectionFactoryFactory[] connectionFactoryFactories) {
 
-    if ((connectionFactoryFactories == null) || (connectionFactoryFactories.length == 0)) {
+    if (connectionFactoryFactories == null || connectionFactoryFactories.length == 0) {
       this.connectionFactoryFactories =
           new ConnectionFactoryFactory[] { new DefaultConnectionFactoryFactory() };
     } else {

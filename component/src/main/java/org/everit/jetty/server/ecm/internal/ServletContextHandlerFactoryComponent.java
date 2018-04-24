@@ -141,7 +141,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
       servletContextHandler.addEventListener(contextListener);
     }
 
-    for (ServletContextAttributeListener contextAttributeListener : this.contextAttributeListeners) {
+    for (ServletContextAttributeListener contextAttributeListener : this.contextAttributeListeners) { // CS_DISABLE_LINE_LENGTH
       servletContextHandler.addEventListener(contextAttributeListener);
     }
 
@@ -149,7 +149,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
       servletContextHandler.addEventListener(requestListener);
     }
 
-    for (ServletRequestAttributeListener requestAttributeListener : this.requestAttributeListeners) {
+    for (ServletRequestAttributeListener requestAttributeListener : this.requestAttributeListeners) { // CS_DISABLE_LINE_LENGTH
       servletContextHandler.addEventListener(requestAttributeListener);
     }
 
@@ -179,10 +179,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     SecurityHandler securityHandler = resolveSecurityHandler();
     ErrorHandler errorHandler = resolveErrorHandler();
 
-    int sessionsFlag = (this.sessions) ? ServletContextHandler.SESSIONS
+    int sessionsFlag = this.sessions ? ServletContextHandler.SESSIONS
         : ServletContextHandler.NO_SESSIONS;
 
-    int securityFlag = (this.security) ? ServletContextHandler.SECURITY
+    int securityFlag = this.security ? ServletContextHandler.SECURITY
         : ServletContextHandler.NO_SECURITY;
 
     int options = securityFlag | sessionsFlag;
