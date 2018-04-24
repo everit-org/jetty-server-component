@@ -56,7 +56,7 @@ public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
         // The length of previousElements can be zero if the ServletHandler is freshly created
         result[i] = createNewElement(newKey);
       } else {
-        Integer position = previousKeysWithPosition.get(newKey);
+        Integer position = this.previousKeysWithPosition.get(newKey);
         if (position != null) {
           result[i] = previousElements[position];
         } else {
@@ -80,6 +80,6 @@ public abstract class AbstractServletContextElementManager<KEY, ELEMENT> {
     for (int i = 0; i < keys.length; i++) {
       updated.put(keys[i], i);
     }
-    previousKeysWithPosition = updated;
+    this.previousKeysWithPosition = updated;
   }
 }

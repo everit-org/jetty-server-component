@@ -35,7 +35,7 @@ public class CustomHttpConnectionFactory extends HttpConnectionFactory implement
     ReferencedEndPointsCloseable {
 
   private final WeakHashMap<EndPoint, Boolean> referencedEndpoints =
-      new WeakHashMap<EndPoint, Boolean>();
+      new WeakHashMap<>();
 
   public CustomHttpConnectionFactory(final HttpConfiguration config) {
     super(config);
@@ -45,7 +45,7 @@ public class CustomHttpConnectionFactory extends HttpConnectionFactory implement
     Set<EndPoint> result = null;
     while (result == null) {
       try {
-        result = new HashSet<EndPoint>(referencedEndpoints.keySet());
+        result = new HashSet<>(this.referencedEndpoints.keySet());
       } catch (ConcurrentModificationException e) {
         // TODO probably some warn logging would be nice
       }
@@ -67,7 +67,7 @@ public class CustomHttpConnectionFactory extends HttpConnectionFactory implement
   @Override
   public synchronized Connection newConnection(final Connector connector, final EndPoint endPoint) {
     Connection result = super.newConnection(connector, endPoint);
-    referencedEndpoints.put(result.getEndPoint(), Boolean.TRUE);
+    this.referencedEndpoints.put(result.getEndPoint(), Boolean.TRUE);
     return result;
   }
 

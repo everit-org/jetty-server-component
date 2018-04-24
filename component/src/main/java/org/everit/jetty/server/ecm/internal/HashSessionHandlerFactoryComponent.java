@@ -112,20 +112,20 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   private String workerName;
 
   private void addListeners(final HashSessionManager sessionManager) {
-    if (sessionListeners != null) {
-      for (HttpSessionListener sessionListener : sessionListeners) {
+    if (this.sessionListeners != null) {
+      for (HttpSessionListener sessionListener : this.sessionListeners) {
         sessionManager.addEventListener(sessionListener);
       }
     }
 
-    if (sessionAttributeListeners != null) {
-      for (HttpSessionAttributeListener sessionAttributeListener : sessionAttributeListeners) {
+    if (this.sessionAttributeListeners != null) {
+      for (HttpSessionAttributeListener sessionAttributeListener : this.sessionAttributeListeners) {
         sessionManager.addEventListener(sessionAttributeListener);
       }
     }
 
-    if (sessionIdListeners != null) {
-      for (HttpSessionIdListener sessionIdListener : sessionIdListeners) {
+    if (this.sessionIdListeners != null) {
+      for (HttpSessionIdListener sessionIdListener : this.sessionIdListeners) {
         sessionManager.addEventListener(sessionIdListener);
       }
     }
@@ -135,7 +135,7 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
     Set<HashSessionManager> result = null;
     while (result == null) {
       try {
-        result = new HashSet<>(referencedSessionManagers.keySet());
+        result = new HashSet<>(this.referencedSessionManagers.keySet());
       } catch (ConcurrentModificationException e) {
         // TODO probably some warn logging would be nice
       }
@@ -147,7 +147,7 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   public synchronized SessionHandler createSessionHandler() {
     HashSessionManager sessionManager = new HashSessionManager();
 
-    sessionManager.setMaxInactiveInterval(maxInactiveInterval);
+    sessionManager.setMaxInactiveInterval(this.maxInactiveInterval);
     File storeDirFile = resolveStoreDirectory();
     if (storeDirFile != null) {
       try {
@@ -156,28 +156,28 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
         throw new ConfigurationException("Could not set store directory: " + storeDirFile, e);
       }
     }
-    sessionManager.setSavePeriod(savePeriod);
-    sessionManager.setCheckingRemoteSessionIdEncoding(checkingRemoteSessionIdEncoding);
-    sessionManager.setDeleteUnrestorableSessions(deleteUnrestorableSessions);
-    sessionManager.setHttpOnly(httpOnly);
-    sessionManager.setIdleSavePeriod(idleSavePeriod);
-    sessionManager.setLazyLoad(lazyLoad);
-    sessionManager.setNodeIdInSessionId(nodeIdInSessionId);
-    sessionManager.setRefreshCookieAge(refreshCookieAge);
-    sessionManager.setScavengePeriod(scavengePeriod);
-    sessionManager.setSecureRequestOnly(secureRequestOnly);
-    sessionManager.setSessionCookie(cookieName);
-    sessionManager.setSessionIdPathParameterName(sessionIdParameterName);
+    sessionManager.setSavePeriod(this.savePeriod);
+    sessionManager.setCheckingRemoteSessionIdEncoding(this.checkingRemoteSessionIdEncoding);
+    sessionManager.setDeleteUnrestorableSessions(this.deleteUnrestorableSessions);
+    sessionManager.setHttpOnly(this.httpOnly);
+    sessionManager.setIdleSavePeriod(this.idleSavePeriod);
+    sessionManager.setLazyLoad(this.lazyLoad);
+    sessionManager.setNodeIdInSessionId(this.nodeIdInSessionId);
+    sessionManager.setRefreshCookieAge(this.refreshCookieAge);
+    sessionManager.setScavengePeriod(this.scavengePeriod);
+    sessionManager.setSecureRequestOnly(this.secureRequestOnly);
+    sessionManager.setSessionCookie(this.cookieName);
+    sessionManager.setSessionIdPathParameterName(this.sessionIdParameterName);
     sessionManager.setSessionTrackingModes(resolveSessionTrackingModes());
 
     HashSessionIdManager hashSessionIdManager = new HashSessionIdManager();
 
-    if (workerName != null) {
-      hashSessionIdManager.setWorkerName(workerName);
+    if (this.workerName != null) {
+      hashSessionIdManager.setWorkerName(this.workerName);
     }
-    hashSessionIdManager.setReseed(reseed);
-    if (random != null) {
-      hashSessionIdManager.setRandom(random);
+    hashSessionIdManager.setReseed(this.reseed);
+    if (this.random != null) {
+      hashSessionIdManager.setRandom(this.random);
     }
 
     sessionManager.setSessionIdManager(hashSessionIdManager);
@@ -192,21 +192,21 @@ public class HashSessionHandlerFactoryComponent implements SessionHandlerFactory
   }
 
   private Set<SessionTrackingMode> resolveSessionTrackingModes() {
-    Set<SessionTrackingMode> result = new HashSet<SessionTrackingMode>();
-    if (usingCookies) {
+    Set<SessionTrackingMode> result = new HashSet<>();
+    if (this.usingCookies) {
       result.add(SessionTrackingMode.COOKIE);
     }
-    if (usingURLs) {
+    if (this.usingURLs) {
       result.add(SessionTrackingMode.URL);
     }
     return result;
   }
 
   private File resolveStoreDirectory() {
-    if (storeDirectory == null) {
+    if (this.storeDirectory == null) {
       return null;
     }
-    return new File(storeDirectory);
+    return new File(this.storeDirectory);
   }
 
   @BooleanAttribute(attributeId = SessionHandlerConstants.ATTR_CHECKING_REMOTE_SESSION_ID_ENCODING,

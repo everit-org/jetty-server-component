@@ -47,12 +47,12 @@ public class FilterMappingKey extends MappingKey<Filter> {
    */
   public FilterMappingKey(final ServiceHolder<Filter> serviceHolder) {
     super(serviceHolder);
-    filterName = serviceHolder.getReferenceId();
+    this.filterName = serviceHolder.getReferenceId();
     Map<String, Object> attributes = serviceHolder.getAttributes();
-    servletNames = resolveClausePotentialListAttribute(
+    this.servletNames = resolveClausePotentialListAttribute(
         ServletContextHandlerFactoryConstants.FILTER_CLAUSE_ATTR_SERVLET_NAME, attributes);
 
-    dispatcher = resolveDispatcherTypes(attributes);
+    this.dispatcher = resolveDispatcherTypes(attributes);
   }
 
   @Override
@@ -68,21 +68,21 @@ public class FilterMappingKey extends MappingKey<Filter> {
       return false;
     }
     FilterMappingKey other = (FilterMappingKey) obj;
-    if (dispatcher == null) {
+    if (this.dispatcher == null) {
       if (other.dispatcher != null) {
         return false;
       }
-    } else if (!dispatcher.equals(other.dispatcher)) {
+    } else if (!this.dispatcher.equals(other.dispatcher)) {
       return false;
     }
-    if (filterName == null) {
+    if (this.filterName == null) {
       if (other.filterName != null) {
         return false;
       }
-    } else if (!filterName.equals(other.filterName)) {
+    } else if (!this.filterName.equals(other.filterName)) {
       return false;
     }
-    if (!Arrays.equals(servletNames, other.servletNames)) {
+    if (!Arrays.equals(this.servletNames, other.servletNames)) {
       return false;
     }
     return true;
@@ -93,9 +93,9 @@ public class FilterMappingKey extends MappingKey<Filter> {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = (prime * result) + ((dispatcher == null) ? 0 : dispatcher.hashCode());
-    result = (prime * result) + ((filterName == null) ? 0 : filterName.hashCode());
-    result = (prime * result) + Arrays.hashCode(servletNames);
+    result = (prime * result) + ((this.dispatcher == null) ? 0 : this.dispatcher.hashCode());
+    result = (prime * result) + ((this.filterName == null) ? 0 : this.filterName.hashCode());
+    result = (prime * result) + Arrays.hashCode(this.servletNames);
     return result;
   }
 
@@ -119,7 +119,7 @@ public class FilterMappingKey extends MappingKey<Filter> {
         } catch (IllegalArgumentException e) {
           throw new ConfigurationException(
               "Invalid dispatcherType in '"
-                  + ServletContextHandlerFactoryConstants.ATTR_FILTERS + "[" + filterName
+                  + ServletContextHandlerFactoryConstants.ATTR_FILTERS + "[" + this.filterName
                   + "]' configuration: "
                   + dispatcherTypeString,
               e);

@@ -45,7 +45,7 @@ public class CustomServletHandler extends ServletHandler {
   public void doHandle(final String target, final Request baseRequest,
       final HttpServletRequest request,
       final HttpServletResponse response) throws IOException, ServletException {
-    ReadLock readLock = readWriteLock.readLock();
+    ReadLock readLock = this.readWriteLock.readLock();
     readLock.lock();
     try {
       super.doHandle(target, baseRequest, request, response);
@@ -58,7 +58,7 @@ public class CustomServletHandler extends ServletHandler {
   public void doScope(final String target, final Request baseRequest,
       final HttpServletRequest request,
       final HttpServletResponse response) throws IOException, ServletException {
-    ReadLock readLock = readWriteLock.readLock();
+    ReadLock readLock = this.readWriteLock.readLock();
     readLock.lock();
     try {
       super.doScope(target, baseRequest, request, response);
@@ -69,14 +69,14 @@ public class CustomServletHandler extends ServletHandler {
 
   @Override
   protected synchronized void updateMappings() {
-    if (!ignoreUpdateMapping) {
+    if (!this.ignoreUpdateMapping) {
       super.updateMappings();
     }
   }
 
   @Override
   protected synchronized void updateNameMappings() {
-    if (!ignoreUpdateMapping) {
+    if (!this.ignoreUpdateMapping) {
       super.updateNameMappings();
     }
   }
@@ -88,10 +88,10 @@ public class CustomServletHandler extends ServletHandler {
   public void updateServletsAndFilters(final ServletHolder[] servletHolders,
       final ServletMapping[] servletMappings, final FilterHolder[] filterHolders,
       final FilterMapping[] filterMappings) {
-    WriteLock writeLock = readWriteLock.writeLock();
+    WriteLock writeLock = this.readWriteLock.writeLock();
     writeLock.lock();
     try {
-      ignoreUpdateMapping = true;
+      this.ignoreUpdateMapping = true;
       setServlets(servletHolders);
       setServletMappings(servletMappings);
       setFilters(filterHolders);
@@ -105,14 +105,14 @@ public class CustomServletHandler extends ServletHandler {
         }
       }
       setFilterMappings(filterMappings);
-      ignoreUpdateMapping = false;
+      this.ignoreUpdateMapping = false;
       if (isStarted()) {
         updateNameMappings();
         updateMappings();
       }
     } finally {
       try {
-        ignoreUpdateMapping = false;
+        this.ignoreUpdateMapping = false;
       } finally {
         writeLock.unlock();
       }

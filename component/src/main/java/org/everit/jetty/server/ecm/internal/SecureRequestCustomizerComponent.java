@@ -56,13 +56,13 @@ public class SecureRequestCustomizerComponent {
     SecureRequestCustomizer secureRequestCustomizer = new SecureRequestCustomizer();
 
     Dictionary<String, Object> properties = new Hashtable<>(componentContext.getProperties());
-    serviceRegistration = componentContext.registerService(
+    this.serviceRegistration = componentContext.registerService(
         new String[] { Customizer.class.getName(), SecureRequestCustomizer.class.getName() },
         secureRequestCustomizer, properties);
   }
 
   @Deactivate
   public void deactivate() {
-    serviceRegistration.unregister();
+    this.serviceRegistration.unregister();
   }
 }

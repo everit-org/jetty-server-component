@@ -43,7 +43,7 @@ public class CustomSslConnectionFactory extends SslConnectionFactory implements
     Set<EndPoint> result = null;
     while (result == null) {
       try {
-        result = new HashSet<EndPoint>(referencedEndPoints.keySet());
+        result = new HashSet<>(this.referencedEndPoints.keySet());
       } catch (ConcurrentModificationException e) {
         // TODO probably some warn logging would be nice
       }
@@ -61,7 +61,7 @@ public class CustomSslConnectionFactory extends SslConnectionFactory implements
 
   @Override
   public Connection newConnection(final Connector connector, final EndPoint endPoint) {
-    referencedEndPoints.put(endPoint, Boolean.TRUE);
+    this.referencedEndPoints.put(endPoint, Boolean.TRUE);
     return super.newConnection(connector, endPoint);
   }
 }

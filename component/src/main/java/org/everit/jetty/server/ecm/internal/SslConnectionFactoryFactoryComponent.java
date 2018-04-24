@@ -67,7 +67,7 @@ public class SslConnectionFactoryFactoryComponent implements ConnectionFactoryFa
 
   @Activate
   public void activate(final BundleContext pBundleContext) {
-    bundleContext = pBundleContext;
+    this.bundleContext = pBundleContext;
   }
 
   @Override
@@ -75,24 +75,25 @@ public class SslConnectionFactoryFactoryComponent implements ConnectionFactoryFa
 
     SslContextFactory sslContextFactory = new SslContextFactory();
 
-    if (keyStore != null) {
-      sslContextFactory.setKeyStore(keyStore);
-      sslContextFactory.setKeyStorePassword(keyStorePassword);
-      sslContextFactory.setCertAlias(certAlias);
-      sslContextFactory.setKeyManagerPassword(keyManagerPassword);
+    if (this.keyStore != null) {
+      sslContextFactory.setKeyStore(this.keyStore);
+      sslContextFactory.setKeyStorePassword(this.keyStorePassword);
+      sslContextFactory.setCertAlias(this.certAlias);
+      sslContextFactory.setKeyManagerPassword(this.keyManagerPassword);
 
-      if ((includeProtocols != null) && (includeProtocols.length > 0)) {
-        sslContextFactory.setIncludeProtocols(includeProtocols);
+      if ((this.includeProtocols != null) && (this.includeProtocols.length > 0)) {
+        sslContextFactory.setIncludeProtocols(this.includeProtocols);
       }
 
-      if ((excludeProtocols != null) && (excludeProtocols.length > 0)) {
-        sslContextFactory.setExcludeProtocols(excludeProtocols);
+      if ((this.excludeProtocols != null) && (this.excludeProtocols.length > 0)) {
+        sslContextFactory.setExcludeProtocols(this.excludeProtocols);
       }
 
       // TODO we have much more settings
 
     } else {
-      URL keyStoreUrl = bundleContext.getBundle().getResource("META-INF/development-keystore.jks");
+      URL keyStoreUrl =
+          this.bundleContext.getBundle().getResource("META-INF/development-keystore.jks");
       sslContextFactory.setKeyStorePath(keyStoreUrl.toExternalForm());
       sslContextFactory
           .setKeyStorePassword(SslConnectionFactoryFactoryConstants.DEFAULT_KEYSTORE_PASSWORD);

@@ -29,7 +29,7 @@ public class ServletMappingKey extends MappingKey<Servlet> {
 
   public ServletMappingKey(final ServiceHolder<Servlet> serviceHolder) {
     super(serviceHolder);
-    servletName = serviceHolder.getReferenceId();
+    this.servletName = serviceHolder.getReferenceId();
   }
 
   @Override
@@ -45,11 +45,11 @@ public class ServletMappingKey extends MappingKey<Servlet> {
       return false;
     }
     ServletMappingKey other = (ServletMappingKey) obj;
-    if (servletName == null) {
+    if (this.servletName == null) {
       if (other.servletName != null) {
         return false;
       }
-    } else if (!servletName.equals(other.servletName)) {
+    } else if (!this.servletName.equals(other.servletName)) {
       return false;
     }
     return true;
@@ -60,7 +60,7 @@ public class ServletMappingKey extends MappingKey<Servlet> {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = (prime * result) + ((servletName == null) ? 0 : servletName.hashCode());
+    result = (prime * result) + ((this.servletName == null) ? 0 : this.servletName.hashCode());
     return result;
   }
 

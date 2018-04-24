@@ -198,7 +198,7 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
   public synchronized void setConnectionFactoryFactories(
       final ConnectionFactoryFactory[] connectionFactoryFactories) {
 
-    if (connectionFactoryFactories == null || connectionFactoryFactories.length == 0) {
+    if ((connectionFactoryFactories == null) || (connectionFactoryFactories.length == 0)) {
       this.connectionFactoryFactories =
           new ConnectionFactoryFactory[] { new DefaultConnectionFactoryFactory() };
     } else {

@@ -27,7 +27,7 @@ public class CustomContextHandlerCollection extends ContextHandlerCollection {
 
   @Override
   public void mapContexts() {
-    if (mapContextsCallIgnored) {
+    if (this.mapContextsCallIgnored) {
       return;
     }
     super.mapContexts();

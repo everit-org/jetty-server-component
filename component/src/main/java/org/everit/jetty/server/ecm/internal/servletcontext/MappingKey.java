@@ -68,21 +68,21 @@ public class MappingKey<T> {
     }
     @SuppressWarnings("unchecked")
     MappingKey<T> other = (MappingKey<T>) obj;
-    if (heldValue == null) {
+    if (this.heldValue == null) {
       if (other.heldValue != null) {
         return false;
       }
-    } else if (!heldValue.equals(other.heldValue)) {
+    } else if (!this.heldValue.equals(other.heldValue)) {
       return false;
     }
-    if (serviceReference == null) {
+    if (this.serviceReference == null) {
       if (other.serviceReference != null) {
         return false;
       }
-    } else if (!serviceReference.equals(other.serviceReference)) {
+    } else if (!this.serviceReference.equals(other.serviceReference)) {
       return false;
     }
-    if (!Arrays.equals(urlPatterns, other.urlPatterns)) {
+    if (!Arrays.equals(this.urlPatterns, other.urlPatterns)) {
       return false;
     }
     return true;
@@ -93,9 +93,10 @@ public class MappingKey<T> {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = (prime * result) + ((heldValue == null) ? 0 : heldValue.hashCode());
-    result = (prime * result) + ((serviceReference == null) ? 0 : serviceReference.hashCode());
-    result = (prime * result) + Arrays.hashCode(urlPatterns);
+    result = (prime * result) + ((this.heldValue == null) ? 0 : this.heldValue.hashCode());
+    result =
+        (prime * result) + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
+    result = (prime * result) + Arrays.hashCode(this.urlPatterns);
     return result;
   }
 

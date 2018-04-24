@@ -71,28 +71,28 @@ public class ForwardedRequestCustomizerComponent {
   public void activate(
       final ComponentContext<ForwardedRequestCustomizerComponent> componentContext) {
     ForwardedRequestCustomizer customizer = new ForwardedRequestCustomizer();
-    if (forwardedCipherSuite != null) {
-      customizer.setForwardedCipherSuiteHeader(forwardedCipherSuite);
+    if (this.forwardedCipherSuite != null) {
+      customizer.setForwardedCipherSuiteHeader(this.forwardedCipherSuite);
     }
-    customizer.setForwardedForHeader(forwardedRemoteAddressHeader);
-    customizer.setForwardedHostHeader(forwardedHostHeader);
-    customizer.setForwardedProtoHeader(forwardedProtoHeader);
-    customizer.setForwardedServerHeader(forwardedServerHeader);
+    customizer.setForwardedForHeader(this.forwardedRemoteAddressHeader);
+    customizer.setForwardedHostHeader(this.forwardedHostHeader);
+    customizer.setForwardedProtoHeader(this.forwardedProtoHeader);
+    customizer.setForwardedServerHeader(this.forwardedServerHeader);
 
-    if (forwardedSslSessionId != null) {
-      customizer.setForwardedSslSessionIdHeader(forwardedSslSessionId);
+    if (this.forwardedSslSessionId != null) {
+      customizer.setForwardedSslSessionIdHeader(this.forwardedSslSessionId);
     }
-    if (hostHeader != null) {
-      customizer.setHostHeader(hostHeader);
+    if (this.hostHeader != null) {
+      customizer.setHostHeader(this.hostHeader);
     }
 
-    serviceRegistration = componentContext.registerService(Customizer.class, customizer,
+    this.serviceRegistration = componentContext.registerService(Customizer.class, customizer,
         new Hashtable<>(componentContext.getProperties()));
   }
 
   @Deactivate
   public void deactivate() {
-    serviceRegistration.unregister();
+    this.serviceRegistration.unregister();
   }
 
   @StringAttribute(attributeId = ForwardedRequestCustomizerConstants.ATTR_FORWARDED_CIPHER_SUITE,

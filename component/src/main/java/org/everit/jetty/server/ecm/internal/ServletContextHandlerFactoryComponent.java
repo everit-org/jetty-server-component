@@ -132,24 +132,24 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   @Activate
   public void activate() {
-    servletHolderManager.updatePrviousKeys(servletKeys);
-    filterHolderManager.updatePrviousKeys(filterKeys);
+    this.servletHolderManager.updatePrviousKeys(this.servletKeys);
+    this.filterHolderManager.updatePrviousKeys(this.filterKeys);
   }
 
   private void addListenersToHandler(final ServletContextHandler servletContextHandler) {
-    for (ServletContextListener contextListener : contextListeners) {
+    for (ServletContextListener contextListener : this.contextListeners) {
       servletContextHandler.addEventListener(contextListener);
     }
 
-    for (ServletContextAttributeListener contextAttributeListener : contextAttributeListeners) {
+    for (ServletContextAttributeListener contextAttributeListener : this.contextAttributeListeners) {
       servletContextHandler.addEventListener(contextAttributeListener);
     }
 
-    for (ServletRequestListener requestListener : requestListeners) {
+    for (ServletRequestListener requestListener : this.requestListeners) {
       servletContextHandler.addEventListener(requestListener);
     }
 
-    for (ServletRequestAttributeListener requestAttributeListener : requestAttributeListeners) {
+    for (ServletRequestAttributeListener requestAttributeListener : this.requestAttributeListeners) {
       servletContextHandler.addEventListener(requestAttributeListener);
     }
 
@@ -158,9 +158,9 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   private Set<ServletContextHandler> cloneActiveServletContextHandlerSet() {
     Set<ServletContextHandler> result = null;
     while (result == null) {
-      Set<ServletContextHandler> keySet = activeServletContextHandlers.keySet();
+      Set<ServletContextHandler> keySet = this.activeServletContextHandlers.keySet();
       try {
-        result = new HashSet<ServletContextHandler>(keySet);
+        result = new HashSet<>(keySet);
       } catch (ConcurrentModificationException e) {
         // Do nothing
       }
@@ -179,10 +179,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
     SecurityHandler securityHandler = resolveSecurityHandler();
     ErrorHandler errorHandler = resolveErrorHandler();
 
-    int sessionsFlag = (sessions) ? ServletContextHandler.SESSIONS
+    int sessionsFlag = (this.sessions) ? ServletContextHandler.SESSIONS
         : ServletContextHandler.NO_SESSIONS;
 
-    int securityFlag = (security) ? ServletContextHandler.SECURITY
+    int securityFlag = (this.security) ? ServletContextHandler.SECURITY
         : ServletContextHandler.NO_SECURITY;
 
     int options = securityFlag | sessionsFlag;
@@ -192,22 +192,22 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
     updateServletHandlerWithDynamicSettings(servletHandler);
 
-    servletContextHandler.setMaxFormContentSize(maxFormContentSize);
-    servletContextHandler.setMaxFormKeys(maxFormKeys);
+    servletContextHandler.setMaxFormContentSize(this.maxFormContentSize);
+    servletContextHandler.setMaxFormKeys(this.maxFormKeys);
     setMimeTypesOnServletContextHandler(servletContextHandler);
-    servletContextHandler.setVirtualHosts(virtualHosts);
+    servletContextHandler.setVirtualHosts(this.virtualHosts);
 
     addListenersToHandler(servletContextHandler);
 
-    activeServletContextHandlers.put(servletContextHandler, Boolean.TRUE);
+    this.activeServletContextHandlers.put(servletContextHandler, Boolean.TRUE);
 
     return servletContextHandler;
   }
 
   private ErrorHandler resolveErrorHandler() {
     ErrorHandler errorHandler = null;
-    if (errorHandlerFactory != null) {
-      errorHandler = errorHandlerFactory.createErrorHandler();
+    if (this.errorHandlerFactory != null) {
+      errorHandler = this.errorHandlerFactory.createErrorHandler();
     }
     return errorHandler;
   }
@@ -227,15 +227,15 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
     for (int i = 0; i < serviceHolders.length; i++) {
       ServiceHolder<E> serviceHolder = serviceHolders[i];
-      result[i] = new HolderKey<E>(serviceHolder);
+      result[i] = new HolderKey<>(serviceHolder);
     }
     return result;
   }
 
   private SecurityHandler resolveSecurityHandler() {
     SecurityHandler securityHandler = null;
-    if (securityHandlerFactory != null) {
-      securityHandler = securityHandlerFactory.createSecurityHandler();
+    if (this.securityHandlerFactory != null) {
+      securityHandler = this.securityHandlerFactory.createSecurityHandler();
     }
     return securityHandler;
   }
@@ -251,8 +251,8 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
 
   private SessionHandler resolveSessionHandler() {
     SessionHandler sessionHandler = null;
-    if (sessionHandlerFactory != null) {
-      sessionHandler = sessionHandlerFactory.createSessionHandler();
+    if (this.sessionHandlerFactory != null) {
+      sessionHandler = this.sessionHandlerFactory.createSessionHandler();
     }
     return sessionHandler;
   }
@@ -299,8 +299,8 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
           + "url-pattern=\"/a,/b/c\";servlet-name=\"myServlet,myOtherServlet\","
           + "dispatcher=\"REQUEST,ASYNC\";filter:=(service.pid=...)")
   public synchronized void setFilters(final ServiceHolder<Filter>[] filters) {
-    filterKeys = resolveHolderKeys(filters);
-    filterMappingKeys = resolveFilterMappingKeys(filters);
+    this.filterKeys = resolveHolderKeys(filters);
+    this.filterMappingKeys = resolveFilterMappingKeys(filters);
   }
 
   @IntegerAttribute(attributeId = ServletContextHandlerFactoryConstants.ATTR_MAX_FORM_CONTENT_SIZE,
@@ -334,10 +334,10 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   private void setMimeTypesOnServletContextHandler(
       final ServletContextHandler servletContextHandler) {
 
-    if (mimeTypes == null) {
+    if (this.mimeTypes == null) {
       servletContextHandler.setMimeTypes(new MimeTypes());
     } else {
-      servletContextHandler.setMimeTypes(mimeTypes);
+      servletContextHandler.setMimeTypes(this.mimeTypes);
     }
 
   }
@@ -396,8 +396,8 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
           + "filter:=(service.pid=...). The OSGi service that implements the Servlet interface can "
           + "contain the \"async-supported\" service property.")
   public void setServlets(final ServiceHolder<Servlet>[] servlets) {
-    servletKeys = resolveHolderKeys(servlets);
-    servletMappingKeys = resolveServletMappingKeys(servlets);
+    this.servletKeys = resolveHolderKeys(servlets);
+    this.servletMappingKeys = resolveServletMappingKeys(servlets);
   }
 
   @ServiceRef(
@@ -450,14 +450,14 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
         updateServletHandlerWithDynamicSettings((CustomServletHandler) servletHandler);
       }
     }
-    servletHolderManager.updatePrviousKeys(servletKeys);
-    servletMappingManager.updatePrviousKeys(servletMappingKeys);
-    filterHolderManager.updatePrviousKeys(filterKeys);
-    filterMappingManager.updatePrviousKeys(filterMappingKeys);
+    this.servletHolderManager.updatePrviousKeys(this.servletKeys);
+    this.servletMappingManager.updatePrviousKeys(this.servletMappingKeys);
+    this.filterHolderManager.updatePrviousKeys(this.filterKeys);
+    this.filterMappingManager.updatePrviousKeys(this.filterMappingKeys);
   }
 
   private synchronized void updateMaxFormContentSize(final int pMaxFormContentSize) {
-    maxFormContentSize = pMaxFormContentSize;
+    this.maxFormContentSize = pMaxFormContentSize;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
       servletContextHandler.setMaxFormContentSize(pMaxFormContentSize);
@@ -466,7 +466,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   }
 
   private synchronized void updateMaxFormKeys(final int pMaxFormKeys) {
-    maxFormKeys = pMaxFormKeys;
+    this.maxFormKeys = pMaxFormKeys;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
       servletContextHandler.setMaxFormKeys(pMaxFormKeys);
@@ -475,7 +475,7 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   }
 
   private synchronized void updateMimeTypes(final MimeTypes pMimeTypes) {
-    mimeTypes = pMimeTypes;
+    this.mimeTypes = pMimeTypes;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
       setMimeTypesOnServletContextHandler(servletContextHandler);
@@ -485,27 +485,29 @@ public class ServletContextHandlerFactoryComponent implements ServletContextHand
   private synchronized void updateServletHandlerWithDynamicSettings(
       final CustomServletHandler servletHandler) {
 
-    ServletHolder[] servletHolders = servletHolderManager.generateUpgradedElementArray(servletKeys,
-        servletHandler.getServlets());
+    ServletHolder[] servletHolders =
+        this.servletHolderManager.generateUpgradedElementArray(this.servletKeys,
+            servletHandler.getServlets());
 
-    ServletMapping[] servletMappings = servletMappingManager.generateUpgradedElementArray(
-        servletMappingKeys, servletHandler.getServletMappings());
+    ServletMapping[] servletMappings = this.servletMappingManager.generateUpgradedElementArray(
+        this.servletMappingKeys, servletHandler.getServletMappings());
 
-    FilterHolder[] filterHolders = filterHolderManager.generateUpgradedElementArray(filterKeys,
-        servletHandler.getFilters());
+    FilterHolder[] filterHolders =
+        this.filterHolderManager.generateUpgradedElementArray(this.filterKeys,
+            servletHandler.getFilters());
 
-    FilterMapping[] filterMappings = filterMappingManager.generateUpgradedElementArray(
-        filterMappingKeys, servletHandler.getFilterMappings());
+    FilterMapping[] filterMappings = this.filterMappingManager.generateUpgradedElementArray(
+        this.filterMappingKeys, servletHandler.getFilterMappings());
 
     servletHandler.updateServletsAndFilters(servletHolders, servletMappings, filterHolders,
         filterMappings);
   }
 
   private synchronized void updateVirtualHosts(final String[] pVirtualHosts) {
-    virtualHosts = pVirtualHosts;
+    this.virtualHosts = pVirtualHosts;
     Set<ServletContextHandler> servletContextHandlers = cloneActiveServletContextHandlerSet();
     for (ServletContextHandler servletContextHandler : servletContextHandlers) {
-      servletContextHandler.setVirtualHosts(virtualHosts);
+      servletContextHandler.setVirtualHosts(this.virtualHosts);
     }
   }
 }

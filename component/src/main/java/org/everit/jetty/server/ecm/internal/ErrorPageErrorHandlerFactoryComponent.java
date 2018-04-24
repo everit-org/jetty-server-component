@@ -68,7 +68,7 @@ public class ErrorPageErrorHandlerFactoryComponent implements ErrorHandlerFactor
 
   private String cacheControl;
 
-  private final Map<Object, String> errorPages = new LinkedHashMap<Object, String>();
+  private final Map<Object, String> errorPages = new LinkedHashMap<>();
 
   private boolean showMessageInTitle;
 
@@ -77,11 +77,11 @@ public class ErrorPageErrorHandlerFactoryComponent implements ErrorHandlerFactor
   @Override
   public ErrorHandler createErrorHandler() {
     ErrorPageErrorHandler result = new ErrorPageErrorHandler();
-    result.setCacheControl(cacheControl);
-    result.setShowMessageInTitle(showMessageInTitle);
-    result.setShowStacks(showStacks);
+    result.setCacheControl(this.cacheControl);
+    result.setShowMessageInTitle(this.showMessageInTitle);
+    result.setShowStacks(this.showStacks);
 
-    Set<Entry<Object, String>> errorPageMappingEntries = errorPages.entrySet();
+    Set<Entry<Object, String>> errorPageMappingEntries = this.errorPages.entrySet();
     for (Entry<Object, String> entry : errorPageMappingEntries) {
       Object mappingKey = entry.getKey();
       if (mappingKey instanceof CodeRange) {
@@ -145,12 +145,12 @@ public class ErrorPageErrorHandlerFactoryComponent implements ErrorHandlerFactor
             String toString = mappedValue.substring(indexOfColon + 1);
             to = Integer.parseInt(toString);
           }
-          errorPages.put(new CodeRange(from, to), uri);
+          this.errorPages.put(new CodeRange(from, to), uri);
         } catch (NumberFormatException e) {
           throw new ConfigurationException("Invalid port range in mapping: " + definition, e);
         }
       } else {
-        errorPages.put(mappedValue, uri);
+        this.errorPages.put(mappedValue, uri);
       }
     }
   }

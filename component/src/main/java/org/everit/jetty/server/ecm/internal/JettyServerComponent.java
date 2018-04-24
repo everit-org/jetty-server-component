@@ -81,8 +81,8 @@ public class JettyServerComponent {
 
     ConnectorFactoryKey(final ServiceHolder<NetworkConnectorFactory> serviceHolder,
         final String host, final int port) {
-      serviceReference = serviceHolder.getReference();
-      connectorId = serviceHolder.getReferenceId();
+      this.serviceReference = serviceHolder.getReference();
+      this.connectorId = serviceHolder.getReferenceId();
       this.host = host;
       this.port = port;
     }
@@ -100,28 +100,28 @@ public class JettyServerComponent {
         return false;
       }
       ConnectorFactoryKey other = (ConnectorFactoryKey) obj;
-      if (connectorId == null) {
+      if (this.connectorId == null) {
         if (other.connectorId != null) {
           return false;
         }
-      } else if (!connectorId.equals(other.connectorId)) {
+      } else if (!this.connectorId.equals(other.connectorId)) {
         return false;
       }
-      if (host == null) {
+      if (this.host == null) {
         if (other.host != null) {
           return false;
         }
-      } else if (!host.equals(other.host)) {
+      } else if (!this.host.equals(other.host)) {
         return false;
       }
-      if (port != other.port) {
+      if (this.port != other.port) {
         return false;
       }
-      if (serviceReference == null) {
+      if (this.serviceReference == null) {
         if (other.serviceReference != null) {
           return false;
         }
-      } else if (!serviceReference.equals(other.serviceReference)) {
+      } else if (!this.serviceReference.equals(other.serviceReference)) {
         return false;
       }
       return true;
@@ -132,10 +132,11 @@ public class JettyServerComponent {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = (prime * result) + ((connectorId == null) ? 0 : connectorId.hashCode());
-      result = (prime * result) + ((host == null) ? 0 : host.hashCode());
-      result = (prime * result) + port;
-      result = (prime * result) + ((serviceReference == null) ? 0 : serviceReference.hashCode());
+      result = (prime * result) + ((this.connectorId == null) ? 0 : this.connectorId.hashCode());
+      result = (prime * result) + ((this.host == null) ? 0 : this.host.hashCode());
+      result = (prime * result) + this.port;
+      result = (prime * result)
+          + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
       return result;
     }
 
@@ -171,8 +172,8 @@ public class JettyServerComponent {
 
     ServletContextFactoryKey(
         final ServiceHolder<ServletContextHandlerFactory> serviceHolder) {
-      serviceReference = serviceHolder.getReference();
-      contextId = serviceHolder.getReferenceId();
+      this.serviceReference = serviceHolder.getReference();
+      this.contextId = serviceHolder.getReferenceId();
     }
 
     @Override
@@ -188,18 +189,18 @@ public class JettyServerComponent {
         return false;
       }
       ServletContextFactoryKey other = (ServletContextFactoryKey) obj;
-      if (contextId == null) {
+      if (this.contextId == null) {
         if (other.contextId != null) {
           return false;
         }
-      } else if (!contextId.equals(other.contextId)) {
+      } else if (!this.contextId.equals(other.contextId)) {
         return false;
       }
-      if (serviceReference == null) {
+      if (this.serviceReference == null) {
         if (other.serviceReference != null) {
           return false;
         }
-      } else if (!serviceReference.equals(other.serviceReference)) {
+      } else if (!this.serviceReference.equals(other.serviceReference)) {
         return false;
       }
       return true;
@@ -210,8 +211,9 @@ public class JettyServerComponent {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = (prime * result) + ((contextId == null) ? 0 : contextId.hashCode());
-      result = (prime * result) + ((serviceReference == null) ? 0 : serviceReference.hashCode());
+      result = (prime * result) + ((this.contextId == null) ? 0 : this.contextId.hashCode());
+      result = (prime * result)
+          + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
       return result;
     }
 
@@ -244,25 +246,26 @@ public class JettyServerComponent {
    */
   @Activate
   public void activate(final ComponentContext<JettyServerComponent> componentContext) {
-    server = new Server();
-    contextHandlerCollection = new CustomContextHandlerCollection();
+    this.server = new Server();
+    this.contextHandlerCollection = new CustomContextHandlerCollection();
 
-    server.setHandler(contextHandlerCollection);
+    this.server.setHandler(this.contextHandlerCollection);
 
     updateConnectorFactoriesOnServer();
 
     updateServletContextHandlerFactoriesOnServer();
 
-    Dictionary<String, Object> serviceProps = new Hashtable<String, Object>(
+    Dictionary<String, Object> serviceProps = new Hashtable<>(
         componentContext.getProperties());
 
     try {
-      server.start();
+      this.server.start();
     } catch (Exception e) {
       fail(e);
       return;
     }
-    serviceRegistration = componentContext.registerService(Server.class, server, serviceProps);
+    this.serviceRegistration =
+        componentContext.registerService(Server.class, this.server, serviceProps);
   }
 
   private void addNewConnectors(
@@ -272,20 +275,20 @@ public class JettyServerComponent {
       NetworkConnectorFactory factory = entry.getValue();
       ConnectorFactoryKey factoryParams = entry.getKey();
 
-      NetworkConnector connector = factory.createNetworkConnector(server, factoryParams.host,
+      NetworkConnector connector = factory.createNetworkConnector(this.server, factoryParams.host,
           factoryParams.port);
 
-      server.addConnector(connector);
-      if (server.isStarted() && !connector.isStarted()) {
+      this.server.addConnector(connector);
+      if (this.server.isStarted() && !connector.isStarted()) {
         try {
           connector.start();
-          server.manage(connector);
+          this.server.manage(connector);
         } catch (Exception e) {
           fail(e);
           return;
         }
       }
-      registeredConnectors.put(factoryParams, connector);
+      this.registeredConnectors.put(factoryParams, connector);
     }
   }
 
@@ -294,14 +297,14 @@ public class JettyServerComponent {
    */
   @Deactivate
   public void deactivate() {
-    if (serviceRegistration != null) {
-      serviceRegistration.unregister();
+    if (this.serviceRegistration != null) {
+      this.serviceRegistration.unregister();
     }
 
-    if ((server != null) && !server.isStopped()) {
+    if ((this.server != null) && !this.server.isStopped()) {
       try {
-        server.stop();
-        server.destroy();
+        this.server.stop();
+        this.server.destroy();
       } catch (Exception e) {
         throw new JettyServerException(e);
       }
@@ -314,8 +317,8 @@ public class JettyServerComponent {
     Set<Entry<ConnectorFactoryKey, NetworkConnector>> connectorToDeleteSet = connectorsToDelete
         .entrySet();
     for (Entry<ConnectorFactoryKey, NetworkConnector> connectorToDelete : connectorToDeleteSet) {
-      registeredConnectors.remove(connectorToDelete.getKey());
-      server.removeConnector(connectorToDelete.getValue());
+      this.registeredConnectors.remove(connectorToDelete.getKey());
+      this.server.removeConnector(connectorToDelete.getValue());
     }
   }
 
@@ -368,12 +371,12 @@ public class JettyServerComponent {
   }
 
   private void setAndManageNewHandlers(final ServletContextHandler[] newHandlers) {
-    contextHandlerCollection.setHandlers(newHandlers);
+    this.contextHandlerCollection.setHandlers(newHandlers);
     for (ServletContextHandler newHandler : newHandlers) {
-      if (!newHandler.isStarted() && server.isStarted()) {
+      if (!newHandler.isStarted() && this.server.isStarted()) {
         try {
           newHandler.start();
-          contextHandlerCollection.manage(newHandler);
+          this.contextHandlerCollection.manage(newHandler);
         } catch (Exception e) {
           throw new JettyServerException(e);
         }
@@ -405,8 +408,8 @@ public class JettyServerComponent {
 
   private synchronized void updateConnectorFactories(
       final ServiceHolder<NetworkConnectorFactory>[] pNetworkConnectorFactories) {
-    networkConnectorFactories = pNetworkConnectorFactories;
-    if (server != null) {
+    this.networkConnectorFactories = pNetworkConnectorFactories;
+    if (this.server != null) {
       updateConnectorFactoriesOnServer();
     }
   }
@@ -414,11 +417,11 @@ public class JettyServerComponent {
   private void updateConnectorFactoriesOnServer() {
     @SuppressWarnings("unchecked")
     HashMap<ConnectorFactoryKey, NetworkConnector> connectorsToDelete =
-        (HashMap<ConnectorFactoryKey, NetworkConnector>) registeredConnectors.clone();
+        (HashMap<ConnectorFactoryKey, NetworkConnector>) this.registeredConnectors.clone();
 
     Map<ConnectorFactoryKey, NetworkConnectorFactory> newConnectors = new HashMap<>();
 
-    for (ServiceHolder<NetworkConnectorFactory> serviceHolder : networkConnectorFactories) {
+    for (ServiceHolder<NetworkConnectorFactory> serviceHolder : this.networkConnectorFactories) {
       NetworkConnectorFactory connectorFactory = serviceHolder.getService();
       Map<String, Object> attributes = serviceHolder.getAttributes();
       String host = resolveHostFromAttributes(attributes);
@@ -443,50 +446,52 @@ public class JettyServerComponent {
   private void updateServletContextAndHandleFailure(
       final ServiceHolder<ServletContextHandlerFactory>[] pServletContextHandlerFactories) {
 
-    servletContextHandlerFactories = pServletContextHandlerFactories;
-    if (server != null) {
+    this.servletContextHandlerFactories = pServletContextHandlerFactories;
+    if (this.server != null) {
       updateServletContextHandlerFactoriesOnServer();
     }
   }
 
   private void updateServletContextHandlerFactoriesOnServer() {
     Set<ServletContextFactoryKey> unregisteredContexts = new HashSet<>(
-        registeredServletContexts.keySet());
+        this.registeredServletContexts.keySet());
 
     ServletContextHandler[] newHandlers =
-        new ServletContextHandler[servletContextHandlerFactories.length];
+        new ServletContextHandler[this.servletContextHandlerFactories.length];
 
-    contextHandlerCollection.setMapContextsCallIgnored(true);
-    for (int i = 0; i < servletContextHandlerFactories.length; i++) {
-      ServiceHolder<ServletContextHandlerFactory> holder = servletContextHandlerFactories[i];
+    this.contextHandlerCollection.setMapContextsCallIgnored(true);
+    for (int i = 0; i < this.servletContextHandlerFactories.length; i++) {
+      ServiceHolder<ServletContextHandlerFactory> holder = this.servletContextHandlerFactories[i];
       String contextPath = resolveContextPath(holder);
       ServletContextFactoryKey factoryKey = new ServletContextFactoryKey(holder);
 
-      ContextWithPath contextWithPath = registeredServletContexts.get(factoryKey);
+      ContextWithPath contextWithPath = this.registeredServletContexts.get(factoryKey);
       if (contextWithPath != null) {
         if (!contextPath.equals(contextWithPath.contextPath)) {
           contextWithPath.handler.setContextPath(contextPath);
-          registeredServletContexts.put(factoryKey, new ContextWithPath(contextWithPath.handler,
-              contextPath));
+          this.registeredServletContexts.put(factoryKey,
+              new ContextWithPath(contextWithPath.handler,
+                  contextPath));
         }
         unregisteredContexts.remove(factoryKey);
         newHandlers[i] = contextWithPath.handler;
       } else {
-        ServletContextHandler handler = holder.getService().createHandler(contextHandlerCollection,
-            contextPath);
+        ServletContextHandler handler =
+            holder.getService().createHandler(this.contextHandlerCollection,
+                contextPath);
 
         newHandlers[i] = handler;
-        registeredServletContexts.put(factoryKey, new ContextWithPath(handler, contextPath));
+        this.registeredServletContexts.put(factoryKey, new ContextWithPath(handler, contextPath));
       }
     }
 
     // Remove handlers that are not in the new configuration
     for (ServletContextFactoryKey key : unregisteredContexts) {
-      registeredServletContexts.remove(key);
+      this.registeredServletContexts.remove(key);
     }
 
     // Set mapContext function back as setHandlers will call it
-    contextHandlerCollection.setMapContextsCallIgnored(false);
+    this.contextHandlerCollection.setMapContextsCallIgnored(false);
     setAndManageNewHandlers(newHandlers);
   }
 }

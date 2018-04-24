@@ -373,9 +373,9 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
         httpConfiguration.setOutputBufferSize(this.outputBufferSize);
         closeAllEndpoints = true;
       }
-      if (this.outputAggregationSize != null
-          && httpConfiguration.getOutputAggregationSize() != this.outputAggregationSize
-              .intValue()) {
+      if ((this.outputAggregationSize != null)
+          && (httpConfiguration.getOutputAggregationSize() != this.outputAggregationSize
+              .intValue())) {
         httpConfiguration.setOutputAggregationSize(this.outputAggregationSize);
         closeAllEndpoints = true;
       }
