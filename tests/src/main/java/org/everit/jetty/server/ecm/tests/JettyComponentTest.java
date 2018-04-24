@@ -31,6 +31,7 @@ import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
+import org.everit.osgi.dev.testrunner.EOSGiTestClass;
 import org.everit.osgi.dev.testrunner.TestRunnerConstants;
 import org.everit.osgi.ecm.annotation.Activate;
 import org.everit.osgi.ecm.annotation.Component;
@@ -53,8 +54,9 @@ import org.junit.Test;
 @StringAttributes({
     @StringAttribute(attributeId = TestRunnerConstants.SERVICE_PROPERTY_TEST_ID,
         defaultValue = "JettyComponentTest"),
-    @StringAttribute(attributeId = TestRunnerConstants.SERVICE_PROPERTY_TESTRUNNER_ENGINE_TYPE,
+    @StringAttribute(attributeId = TestRunnerConstants.SERVICE_PROPERTY_TESTRUNNER_ENGINE,
         defaultValue = "junit4") })
+@EOSGiTestClass
 @Service
 public class JettyComponentTest {
 
@@ -96,7 +98,7 @@ public class JettyComponentTest {
    */
   @Activate
   public void activate() {
-    Connector[] connectors = server.getConnectors();
+    Connector[] connectors = this.server.getConnectors();
     if (connectors.length == 0) {
       throw new ConfigurationException("At least on network connector should be available");
     }
@@ -137,11 +139,12 @@ public class JettyComponentTest {
   public void testForwardRequestCustomizer() {
     try {
       InetAddress localHost = InetAddress.getLocalHost();
-      URL url = new URL("http://" + localHost.getHostName() + ":" + port + "/sample/echoremote");
+      URL url =
+          new URL("http://" + localHost.getHostName() + ":" + this.port + "/sample/echoremote");
       HttpURLConnection urlConnection = openConnection(url);
       JSONObject jsonObject = readJSONResponse(urlConnection);
       Assert.assertEquals(localHost.getHostName(), jsonObject.getString("serverName"));
-      Assert.assertEquals(String.valueOf(port), jsonObject.get("serverPort").toString());
+      Assert.assertEquals(String.valueOf(this.port), jsonObject.get("serverPort").toString());
 
       final String testClientName = "11.11" + ".11.11";
       final String testServerName = "mytest.com";
