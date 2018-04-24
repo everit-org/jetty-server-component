@@ -15,9 +15,11 @@
  */
 package org.everit.jetty.server.ecm.internal;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -91,7 +93,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     Set<CustomHttpConnectionFactory> connectionFactories =
         cloneReferencedConnectionFactories();
 
-    Set<HttpConnectionFactory> result = new HashSet<HttpConnectionFactory>();
+    Set<HttpConnectionFactory> result = new HashSet<>();
 
     for (CustomHttpConnectionFactory customConnectionFactory : connectionFactories) {
       result.add(customConnectionFactory);
@@ -105,7 +107,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     Set<CustomHttpConnectionFactory> result = null;
     while (result == null) {
       try {
-        result = new HashSet<>(activeConnectionFactories.keySet());
+        result = new HashSet<>(this.activeConnectionFactories.keySet());
       } catch (ConcurrentModificationException e) {
         // TODO probably some warn logging would be nice
       }
@@ -116,29 +118,36 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   @Override
   public synchronized ConnectionFactory createConnectionFactory(final String nextProtocol) {
     HttpConfiguration httpConfiguration = new HttpConfiguration();
-    httpConfiguration.setDelayDispatchUntilContent(delayDispatchUntilContent);
-    httpConfiguration.setCustomizers(Arrays.asList(customizers));
-    httpConfiguration.setHeaderCacheSize(headerCacheSize);
+    httpConfiguration.setDelayDispatchUntilContent(this.delayDispatchUntilContent);
 
-    httpConfiguration.setOutputBufferSize(outputBufferSize);
-
-    if (outputAggregationSize != null) {
-      httpConfiguration.setOutputAggregationSize(outputAggregationSize);
+    if (this.customizers != null) {
+      httpConfiguration.setCustomizers(Arrays.asList(this.customizers));
+    } else {
+      List<Customizer> defaultCustomizers = new ArrayList<>();
+      httpConfiguration.setCustomizers(defaultCustomizers);
     }
 
-    httpConfiguration.setRequestHeaderSize(requestHeaderSize);
-    httpConfiguration.setResponseHeaderSize(responseHeaderSize);
-    httpConfiguration.setSecurePort(securePort);
-    httpConfiguration.setSecureScheme(secureScheme);
-    httpConfiguration.setSendDateHeader(sendDateHeader);
-    httpConfiguration.setSendServerVersion(sendServerVersion);
-    httpConfiguration.setSendXPoweredBy(sendXPoweredBy);
+    httpConfiguration.setHeaderCacheSize(this.headerCacheSize);
+
+    httpConfiguration.setOutputBufferSize(this.outputBufferSize);
+
+    if (this.outputAggregationSize != null) {
+      httpConfiguration.setOutputAggregationSize(this.outputAggregationSize);
+    }
+
+    httpConfiguration.setRequestHeaderSize(this.requestHeaderSize);
+    httpConfiguration.setResponseHeaderSize(this.responseHeaderSize);
+    httpConfiguration.setSecurePort(this.securePort);
+    httpConfiguration.setSecureScheme(this.secureScheme);
+    httpConfiguration.setSendDateHeader(this.sendDateHeader);
+    httpConfiguration.setSendServerVersion(this.sendServerVersion);
+    httpConfiguration.setSendXPoweredBy(this.sendXPoweredBy);
 
     CustomHttpConnectionFactory httpConnectionFactory = new CustomHttpConnectionFactory(
         httpConfiguration);
-    httpConnectionFactory.setInputBufferSize(inputBufferSize);
+    httpConnectionFactory.setInputBufferSize(this.inputBufferSize);
 
-    activeConnectionFactories.put(httpConnectionFactory, true);
+    this.activeConnectionFactories.put(httpConnectionFactory, true);
     return httpConnectionFactory;
   }
 
@@ -174,7 +183,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       httpConnectionFactory.getHttpConfiguration().setDelayDispatchUntilContent(
           delayDispatchUntilContent);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -190,7 +199,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setHeaderCacheSize(headerCacheSize);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -208,7 +217,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.setInputBufferSize(inputBufferSize);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   @IntegerAttribute(
@@ -253,7 +262,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -271,7 +280,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setResponseHeaderSize(responseHeaderSize);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -286,7 +295,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSecurePort(securePort);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -301,7 +310,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSecureScheme(secureScheme);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -317,7 +326,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendDateHeader(sendDateHeader);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -333,7 +342,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendServerVersion(sendServerVersion);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -349,7 +358,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendXPoweredBy(sendXPoweredBy);
     }
-    closeAllEndpointsAfterDynamicUpdate = true;
+    this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
   /**
@@ -357,16 +366,17 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
    */
   @Update
   public synchronized void update() {
-    boolean closeAllEndpoints = closeAllEndpointsAfterDynamicUpdate;
+    boolean closeAllEndpoints = this.closeAllEndpointsAfterDynamicUpdate;
     for (CustomHttpConnectionFactory connectionFactory : cloneReferencedConnectionFactories()) {
       HttpConfiguration httpConfiguration = connectionFactory.getHttpConfiguration();
-      if (httpConfiguration.getOutputBufferSize() != outputBufferSize) {
-        httpConfiguration.setOutputBufferSize(outputBufferSize);
+      if (httpConfiguration.getOutputBufferSize() != this.outputBufferSize) {
+        httpConfiguration.setOutputBufferSize(this.outputBufferSize);
         closeAllEndpoints = true;
       }
-      if ((outputAggregationSize != null)
-          && (httpConfiguration.getOutputAggregationSize() != outputAggregationSize.intValue())) {
-        httpConfiguration.setOutputAggregationSize(outputAggregationSize);
+      if (this.outputAggregationSize != null
+          && httpConfiguration.getOutputAggregationSize() != this.outputAggregationSize
+              .intValue()) {
+        httpConfiguration.setOutputAggregationSize(this.outputAggregationSize);
         closeAllEndpoints = true;
       }
       if (closeAllEndpoints) {
@@ -374,6 +384,6 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       }
     }
 
-    closeAllEndpointsAfterDynamicUpdate = false;
+    this.closeAllEndpointsAfterDynamicUpdate = false;
   }
 }
