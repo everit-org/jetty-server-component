@@ -103,7 +103,7 @@ public class JettyComponentTest {
       throw new ConfigurationException("At least on network connector should be available");
     }
     Integer foundPort = null;
-    for (int i = 0; i < connectors.length && foundPort == null; i++) {
+    for (int i = 0; (i < connectors.length) && (foundPort == null); i++) {
       Connector connector = connectors[i];
       if (!(connector instanceof NetworkConnector)) {
         throw new ConfigurationException("Connector must be an instance of network connector");
@@ -124,7 +124,7 @@ public class JettyComponentTest {
   }
 
   private JSONObject readJSONResponse(final HttpURLConnection urlConnection) throws IOException {
-    String response = readResponseFromUrlConnection(urlConnection);
+    String response = JettyComponentTest.readResponseFromUrlConnection(urlConnection);
     JSONObject jsonObject = new JSONObject(response);
     return jsonObject;
   }
@@ -141,7 +141,7 @@ public class JettyComponentTest {
       InetAddress localHost = InetAddress.getLocalHost();
       URL url =
           new URL("http://" + localHost.getHostName() + ":" + this.port + "/sample/echoremote");
-      HttpURLConnection urlConnection = openConnection(url);
+      HttpURLConnection urlConnection = JettyComponentTest.openConnection(url);
       JSONObject jsonObject = readJSONResponse(urlConnection);
       Assert.assertEquals(localHost.getHostName(), jsonObject.getString("serverName"));
       Assert.assertEquals(String.valueOf(this.port), jsonObject.get("serverPort").toString());
@@ -150,7 +150,7 @@ public class JettyComponentTest {
       final String testServerName = "mytest.com";
       final int testServerPort = 888;
 
-      urlConnection = openConnection(url);
+      urlConnection = JettyComponentTest.openConnection(url);
       urlConnection.setRequestProperty(HttpHeader.X_FORWARDED_FOR.asString(), testClientName);
 
       urlConnection.setRequestProperty(HttpHeader.X_FORWARDED_HOST.asString(),

@@ -66,7 +66,7 @@ public class HelloWorldServlet implements Servlet {
     PrintWriter writer = res.getWriter();
 
     writer.write("<html><body>");
-    writer.write("<p>Hello " + name + "!</p>");
+    writer.write("<p>Hello " + this.name + "!</p>");
     writer.write("<p>Is secure: " + req.isSecure() + "</p>");
     writer.write("<p>We are at the meetup!!!</p>");
     writer.write("</body></html>");
