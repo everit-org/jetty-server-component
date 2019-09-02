@@ -31,23 +31,15 @@ public final class ServerConnectorFactoryConstants {
 
   public static final String ATTR_INHERIT_CHANNEL = "inheritChannel";
 
-  public static final String ATTR_LINGER_TIME = "lingerTime";
-
   public static final String ATTR_NAME = "name";
 
   public static final String ATTR_REUSE_ADDRESS = "reuseAddress";
-
-  public static final String ATTR_SELECTOR_PRIORITY_DELTA = "selectorPriorityDelta";
 
   public static final long DEFAULT_IDLE_TIMEOUT = 30000;
 
   public static final boolean DEFAULT_INHERIT_CHANNEL = false;
 
-  public static final int DEFAULT_LINGER_TIME = -1;
-
   public static final boolean DEFAULT_REUSE_ADDRESS = true;
-
-  public static final int DEFAULT_SELECTOR_PRIORITY_DELTA = 0;
 
   public static final String SERVICE_FACTORY_PID =
       "org.everit.jetty.server.ecm.ServerConnectorFactory";

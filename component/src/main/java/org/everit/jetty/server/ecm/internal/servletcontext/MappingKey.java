@@ -54,6 +54,8 @@ public class MappingKey<T> {
 
   }
 
+  // CHECKSTYLE.OFF: NPathComplexity
+  // CHECKSTYLE.OFF: CyclomaticComplexity
   @Override
   @Generated("eclipse")
   public boolean equals(final Object obj) {
@@ -87,21 +89,23 @@ public class MappingKey<T> {
     }
     return true;
   }
+  // CHECKSTYLE.ON: NPathComplexity
+  // CHECKSTYLE.ON: CyclomaticComplexity
 
   @Override
   @Generated("eclipse")
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = (prime * result) + ((this.heldValue == null) ? 0 : this.heldValue.hashCode());
+    result = prime * result + (this.heldValue == null ? 0 : this.heldValue.hashCode());
     result =
-        (prime * result) + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
-    result = (prime * result) + Arrays.hashCode(this.urlPatterns);
+        prime * result + (this.serviceReference == null ? 0 : this.serviceReference.hashCode());
+    result = prime * result + Arrays.hashCode(this.urlPatterns);
     return result;
   }
 
   /**
-   * Resolves the specified attribute even if it is specified with XXX:List<String> format.
+   * Resolves the specified attribute even if it is specified with XXX:List&lt;String&gt; format.
    *
    * @param attributeName
    *          The name of the attribute that is resolved from the clause.

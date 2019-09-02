@@ -19,11 +19,11 @@ package org.everit.jetty.server.ecm;
  * Constants that are specifically available for Hash based session handler implementation. Common
  * constants are in {@link SessionHandlerConstants}.
  */
-public final class HashSessionHandlerFactoryConstants {
+public final class SessionHandlerFactoryConstants {
 
   public static final String SERVICE_FACTORY_PID =
       "org.everit.jetty.server.ecm.HashSessionHandlerFactory";
 
-  private HashSessionHandlerFactoryConstants() {
+  private SessionHandlerFactoryConstants() {
   }
 }

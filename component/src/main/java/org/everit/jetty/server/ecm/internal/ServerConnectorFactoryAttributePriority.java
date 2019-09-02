@@ -34,11 +34,7 @@ public final class ServerConnectorFactoryAttributePriority {
 
   public static final int P07_INHERIT_CHANNEL = 7;
 
-  public static final int P08_LINGER_TIME = 8;
-
-  public static final int P09_ACCEPTOR_PRIORITY_DELTA = 9;
-
-  public static final int P10_SELECTOR_PRIORITY_DELTA = 10;
+  public static final int P09_ACCEPTOR_PRIORITY_DELTA = 8;
 
   private ServerConnectorFactoryAttributePriority() {
   }

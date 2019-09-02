@@ -59,6 +59,8 @@ public class HolderKey<T> {
     this.initParameters = resolveInitParameters(serviceHolder.getAttributes());
   }
 
+  // CHECKSTYLE.OFF: NPathComplexity
+  // CHECKSTYLE.OFF: CyclomaticComplexity
   @Override
   @Generated("eclipse")
   public boolean equals(final Object obj) {
@@ -106,19 +108,21 @@ public class HolderKey<T> {
     }
     return true;
   }
+  // CHECKSTYLE.ON: NPathComplexity
+  // CHECKSTYLE.ON: CyclomaticComplexity
 
   @Override
   @Generated("eclipse")
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = (prime * result) + (this.asyncSupported ? 1231 : 1237);
-    result = (prime * result) + ((this.heldValue == null) ? 0 : this.heldValue.hashCode());
+    result = prime * result + (this.asyncSupported ? 1231 : 1237);
+    result = prime * result + (this.heldValue == null ? 0 : this.heldValue.hashCode());
     result =
-        (prime * result) + ((this.initParameters == null) ? 0 : this.initParameters.hashCode());
-    result = (prime * result) + ((this.name == null) ? 0 : this.name.hashCode());
+        prime * result + (this.initParameters == null ? 0 : this.initParameters.hashCode());
+    result = prime * result + (this.name == null ? 0 : this.name.hashCode());
     result =
-        (prime * result) + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
+        prime * result + (this.serviceReference == null ? 0 : this.serviceReference.hashCode());
     return result;
   }
 
@@ -136,8 +140,8 @@ public class HolderKey<T> {
     Set<Entry<String, Object>> attributeEntries = attributes.entrySet();
     for (Entry<String, Object> attributeEntry : attributeEntries) {
       String attributeKey = attributeEntry.getKey();
-      if (attributeKey.startsWith(INIT_PARAM_PREFIX)) {
-        String initParamName = attributeKey.substring(INIT_PARAM_PREFIX.length());
+      if (attributeKey.startsWith(HolderKey.INIT_PARAM_PREFIX)) {
+        String initParamName = attributeKey.substring(HolderKey.INIT_PARAM_PREFIX.length());
 
         Object attributeValue = attributeEntry.getValue();
         String initParamValue = null;

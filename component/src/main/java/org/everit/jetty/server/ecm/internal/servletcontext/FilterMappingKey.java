@@ -55,6 +55,8 @@ public class FilterMappingKey extends MappingKey<Filter> {
     this.dispatcher = resolveDispatcherTypes(attributes);
   }
 
+  // CHECKSTYLE.OFF: NPathComplexity
+  // CHECKSTYLE.OFF: CyclomaticComplexity
   @Override
   @Generated("eclipse")
   public boolean equals(final Object obj) {
@@ -87,15 +89,17 @@ public class FilterMappingKey extends MappingKey<Filter> {
     }
     return true;
   }
+  // CHECKSTYLE.ON: NPathComplexity
+  // CHECKSTYLE.ON: CyclomaticComplexity
 
   @Override
   @Generated("eclipse")
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = (prime * result) + ((this.dispatcher == null) ? 0 : this.dispatcher.hashCode());
-    result = (prime * result) + ((this.filterName == null) ? 0 : this.filterName.hashCode());
-    result = (prime * result) + Arrays.hashCode(this.servletNames);
+    result = prime * result + (this.dispatcher == null ? 0 : this.dispatcher.hashCode());
+    result = prime * result + (this.filterName == null ? 0 : this.filterName.hashCode());
+    result = prime * result + Arrays.hashCode(this.servletNames);
     return result;
   }
 

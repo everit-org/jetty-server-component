@@ -84,16 +84,12 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
 
   private boolean inheritChannel;
 
-  private int lingerTime;
-
   private String name;
 
   private final WeakHashMap<ServerConnector, Boolean> providedConnectors =
       new WeakHashMap<>();
 
   private boolean reuseAddress;
-
-  private int selectorPriorityDelta;
 
   private boolean updateConnectionFactories = false;
 
@@ -130,8 +126,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     result.setInheritChannel(this.inheritChannel);
     result.setName(this.name);
     result.setReuseAddress(this.reuseAddress);
-    result.setSelectorPriorityDelta(this.selectorPriorityDelta);
-    result.setSoLingerTime(this.lingerTime);
     result.setHost(host);
     result.setPort(port);
     putIntoProvidedConnectors(result);
@@ -244,14 +238,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
     this.inheritChannel = inheritChannel;
   }
 
-  @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_LINGER_TIME,
-      defaultValue = ServerConnectorFactoryConstants.DEFAULT_LINGER_TIME,
-      priority = ServerConnectorFactoryAttributePriority.P08_LINGER_TIME, label = "Linger time",
-      description = "The linger time. Use -1 to disable.")
-  public void setLingerTime(final int lingerTime) {
-    this.lingerTime = lingerTime;
-  }
-
   @StringAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_NAME, optional = true,
       priority = ServerConnectorFactoryAttributePriority.P04_NAME, label = "Name",
       description = "Set a connector name. A context may be configured with virtual hosts in the "
@@ -266,25 +252,6 @@ public class ServerConnectorFactoryComponent implements NetworkConnectorFactory 
       description = "Whether the server socket reuses addresses.")
   public void setReuseAddress(final boolean reuseAddress) {
     this.reuseAddress = reuseAddress;
-  }
-
-  /**
-   * Sets the selectorPriorityDelta on the component and every active connector.
-   */
-  @IntegerAttribute(attributeId = ServerConnectorFactoryConstants.ATTR_SELECTOR_PRIORITY_DELTA,
-      defaultValue = ServerConnectorFactoryConstants.DEFAULT_SELECTOR_PRIORITY_DELTA,
-      dynamic = true,
-      priority = ServerConnectorFactoryAttributePriority.P10_SELECTOR_PRIORITY_DELTA,
-      label = "Selector priority delta",
-      description = "Sets the selector thread priority delta to the given amount. This allows the "
-          + "selector threads to run at a different priority. Typically this would be used to "
-          + "lower the priority to give preference to handling previously accepted connections "
-          + "rather than accepting new connections.")
-  public synchronized void setSelectorPriorityDelta(final int selectorPriorityDelta) {
-    this.selectorPriorityDelta = selectorPriorityDelta;
-    for (ServerConnector serverConnector : activeServerConnectors()) {
-      serverConnector.setSelectorPriorityDelta(selectorPriorityDelta);
-    }
   }
 
   /**

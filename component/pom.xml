@@ -19,12 +19,12 @@
   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
-    <version>7.4.0</version>
+    <version>8.0.0</version>
   </parent>
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>2.0.1</version>
+  <version>3.0.0</version>
 
   <packaging>bundle</packaging>
 
@@ -33,8 +33,6 @@
 
   <properties>
     <projectpath>jetty-server-ecm</projectpath>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
   </properties>
 
   <licenses>
@@ -74,7 +72,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>3.5.0</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
@@ -117,7 +114,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.9.v20160517</version>
+      <version>9.4.20.v20190813</version>
       <exclusions>
         <exclusion>
           <artifactId>javax.servlet-api</artifactId>

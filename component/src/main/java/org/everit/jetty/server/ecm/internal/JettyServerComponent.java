@@ -87,6 +87,8 @@ public class JettyServerComponent {
       this.port = port;
     }
 
+    // CHECKSTYLE.OFF: NPathComplexity
+    // CHECKSTYLE.OFF: CyclomaticComplexity
     @Override
     @Generated("eclipse")
     public boolean equals(final Object obj) {
@@ -126,17 +128,19 @@ public class JettyServerComponent {
       }
       return true;
     }
+    // CHECKSTYLE.ON: CyclomaticComplexity
+    // CHECKSTYLE.ON: NPathComplexity
 
     @Override
     @Generated("eclipse")
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = (prime * result) + ((this.connectorId == null) ? 0 : this.connectorId.hashCode());
-      result = (prime * result) + ((this.host == null) ? 0 : this.host.hashCode());
-      result = (prime * result) + this.port;
-      result = (prime * result)
-          + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
+      result = prime * result + (this.connectorId == null ? 0 : this.connectorId.hashCode());
+      result = prime * result + (this.host == null ? 0 : this.host.hashCode());
+      result = prime * result + this.port;
+      result = prime * result
+          + (this.serviceReference == null ? 0 : this.serviceReference.hashCode());
       return result;
     }
 
@@ -211,9 +215,9 @@ public class JettyServerComponent {
     public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = (prime * result) + ((this.contextId == null) ? 0 : this.contextId.hashCode());
-      result = (prime * result)
-          + ((this.serviceReference == null) ? 0 : this.serviceReference.hashCode());
+      result = prime * result + (this.contextId == null ? 0 : this.contextId.hashCode());
+      result = prime * result
+          + (this.serviceReference == null ? 0 : this.serviceReference.hashCode());
       return result;
     }
 
@@ -301,7 +305,7 @@ public class JettyServerComponent {
       this.serviceRegistration.unregister();
     }
 
-    if ((this.server != null) && !this.server.isStopped()) {
+    if (this.server != null && !this.server.isStopped()) {
       try {
         this.server.stop();
         this.server.destroy();
@@ -386,7 +390,7 @@ public class JettyServerComponent {
 
   @ServiceRef(referenceId = JettyServerConstants.ATTR_NETWORK_CONNECTOR_FACTORIES,
       configurationType = ReferenceConfigurationType.CLAUSE, optional = false, dynamic = true,
-      attributePriority = P02_NETWORK_CONNECTOR_FACTORIES,
+      attributePriority = JettyServerComponent.P02_NETWORK_CONNECTOR_FACTORIES,
       label = "NetworkConnector Factories (clause)",
       description = "Zero or more clauses to install Network Connectors based on their factory "
           + "services. Supported attributes: host, port.")
@@ -397,7 +401,7 @@ public class JettyServerComponent {
 
   @ServiceRef(referenceId = JettyServerConstants.ATTR_SERVLET_CONTEXT_HANDLER_FACTORIES,
       configurationType = ReferenceConfigurationType.CLAUSE, dynamic = true,
-      attributePriority = P03_SERVLET_CONTEXT_HANDLER_FACTORIES,
+      attributePriority = JettyServerComponent.P03_SERVLET_CONTEXT_HANDLER_FACTORIES,
       label = "ServletContextHandler Factories (clause)",
       description = "Zero or more clauses to install Servlet Contexts based on their factory "
           + "services. Supported attributes: contextPath")

@@ -73,7 +73,7 @@ public class SslConnectionFactoryFactoryComponent implements ConnectionFactoryFa
   @Override
   public ConnectionFactory createConnectionFactory(final String nextProtocol) {
 
-    SslContextFactory sslContextFactory = new SslContextFactory();
+    SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
 
     if (this.keyStore != null) {
       sslContextFactory.setKeyStore(this.keyStore);
@@ -81,11 +81,11 @@ public class SslConnectionFactoryFactoryComponent implements ConnectionFactoryFa
       sslContextFactory.setCertAlias(this.certAlias);
       sslContextFactory.setKeyManagerPassword(this.keyManagerPassword);
 
-      if ((this.includeProtocols != null) && (this.includeProtocols.length > 0)) {
+      if (this.includeProtocols != null && this.includeProtocols.length > 0) {
         sslContextFactory.setIncludeProtocols(this.includeProtocols);
       }
 
-      if ((this.excludeProtocols != null) && (this.excludeProtocols.length > 0)) {
+      if (this.excludeProtocols != null && this.excludeProtocols.length > 0) {
         sslContextFactory.setExcludeProtocols(this.excludeProtocols);
       }
 
