@@ -18,7 +18,7 @@ package org.everit.jetty.server.ecm.internal;
 /**
  * Constants of HashSessionHandlerFactory attribute priority.
  */
-public final class HashSessionHandlerFactoryAttributePriority {
+public final class SessionHandlerFactoryAttributePriority {
 
   public static final int P01_SERVICE_DESCRIPTION = 1;
 
@@ -44,6 +44,6 @@ public final class HashSessionHandlerFactoryAttributePriority {
 
   public static final int P19_REFRESH_COOKIE_AGE = 19;
 
-  private HashSessionHandlerFactoryAttributePriority() {
+  private SessionHandlerFactoryAttributePriority() {
   }
 }

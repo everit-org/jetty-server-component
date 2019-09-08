@@ -21,8 +21,47 @@ package org.everit.jetty.server.ecm;
  */
 public final class SessionHandlerFactoryConstants {
 
+  public static final String ATTR_CHECKING_REMOTE_SESSION_ID_ENCODING =
+      "checkingRemoteSessionIdEncoding";
+
+  public static final String ATTR_COOKIE_NAME = "cookieName";
+
+  public static final String ATTR_HTTP_ONLY = "httpOnly";
+
+  public static final String ATTR_MAX_INACTIVE_INTERVAL = "maxInactiveInterval";
+
+  public static final String ATTR_NODE_IN_SESSION_ID = "nodeIdInSessionId";
+
+  public static final String ATTR_REFRESH_COOKIE_AGE = "refreshCookieAge";
+
+  public static final String ATTR_SECURE_REQUEST_ONLY = "secureRequestOnly";
+
+  public static final String ATTR_SESSION_ATTRIBUTE_LISTENERS = "sessionAttributeListeners";
+
+  public static final String ATTR_SESSION_CACHE = "sessionCache";
+
+  public static final String ATTR_SESSION_LISTENERS = "sessionListeners";
+
+  public static final String ATTR_USING_COOKIES = "usingCookies";
+
+  public static final boolean DEFAULT_CHECKING_REMOTE_SESSION_ID_ENCODING = false;
+
+  public static final boolean DEFAULT_HTTP_ONLY = false;
+
+  public static final int DEFAULT_MAX_INACTIVE_INTERVAL = 30;
+
+  public static final boolean DEFAULT_NODE_IN_SESSION_ID = false;
+
+  public static final int DEFAULT_REFRESH_COOKIE_AGE = 0;
+
+  public static final boolean DEFAULT_SECURE_REQUEST_ONLY = true;
+
+  public static final boolean DEFAULT_USING_COOKIES = true;
+
   public static final String SERVICE_FACTORY_PID =
-      "org.everit.jetty.server.ecm.HashSessionHandlerFactory";
+      "org.everit.jetty.server.ecm.SessionHandlerFactory";
+
+  public static final String SESSION_ID_PARAMETER_NAME = "sessionIdParameterName";
 
   private SessionHandlerFactoryConstants() {
   }

@@ -83,7 +83,7 @@ public class ForwardedRequestCustomizerComponent {
       customizer.setForwardedSslSessionIdHeader(this.forwardedSslSessionId);
     }
     if (this.hostHeader != null) {
-      customizer.setHostHeader(this.hostHeader);
+      customizer.setForcedHost(this.hostHeader);
     }
 
     this.serviceRegistration = componentContext.registerService(Customizer.class, customizer,
