@@ -24,15 +24,17 @@ public final class SessionHandlerFactoryAttributePriority {
 
   public static final int P02_MAX_INACTIVE_INTERVAL = 2;
 
-  public static final int P03_SESSION_LISTENERS = 3;
+  public static final float P04_SESSION_CACHE_FACTORY = 4;
 
-  public static final int P04_SESSION_ATTRIBUTE_LISTENERS = 4;
+  public static final int P05_SESSION_LISTENERS = 5;
 
-  public static final int P06_SECURE_REQUEST_ONLY = 6;
+  public static final int P06_SESSION_ATTRIBUTE_LISTENERS = 6;
 
-  public static final int P07_USING_COOKIES = 7;
+  public static final int P07_SECURE_REQUEST_ONLY = 7;
 
   public static final int P08_COOKIE_NAME = 8;
+
+  public static final int P09_USING_COOKIES = 9;
 
   public static final int P10_SESSION_ID_PARAMETER_NAME = 10;
 

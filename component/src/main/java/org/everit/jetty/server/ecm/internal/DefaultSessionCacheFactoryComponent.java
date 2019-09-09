@@ -100,8 +100,8 @@ public class DefaultSessionCacheFactoryComponent implements SessionCacheFactory 
       defaultValue = false,
       priority = DefaultSessionCacheFactoryAttributePriority.P3_SAVE_ON_CREATE,
       label = "Save on create",
-      description = "Whether or not a session that is newly created should beimmediately saved."
-          + " If false, a session that is created andinvalidated within a single request is"
+      description = "Whether or not a session that is newly created should be immediately saved."
+          + " If false, a session that is created and invalidated within a single request is"
           + " never persisted. (default: false)")
   public void setSaveOnCreate(boolean saveOnCreate) {
     this.saveOnCreate = saveOnCreate;

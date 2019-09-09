@@ -38,7 +38,7 @@ public final class SessionHandlerFactoryConstants {
 
   public static final String ATTR_SESSION_ATTRIBUTE_LISTENERS = "sessionAttributeListeners";
 
-  public static final String ATTR_SESSION_CACHE = "sessionCache";
+  public static final String ATTR_SESSION_CACHE_FACTORY = "sessionCacheFactory";
 
   public static final String ATTR_SESSION_LISTENERS = "sessionListeners";
 

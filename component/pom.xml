@@ -24,7 +24,7 @@
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>3.1.0-SNAPSHOT</version>
+  <version>4.0.0</version>
 
   <packaging>bundle</packaging>
 
@@ -81,7 +81,7 @@
               *
             </Import-Package>
             <Export-Package>
-              org.everit.jetty.server.ecm
+              org.everit.jetty.server.ecm;version="4.0.0"
             </Export-Package>
             <_plugin>org.everit.osgi.ecm.bnd.ECMBndAnalyzerPlugin</_plugin>
           </instructions>
@@ -109,7 +109,7 @@
     <dependency>
       <groupId>org.everit.jetty</groupId>
       <artifactId>org.everit.jetty.server.api</artifactId>
-      <version>1.1.0-SNAPSHOT</version>
+      <version>1.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>

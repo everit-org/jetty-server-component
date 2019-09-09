@@ -18,8 +18,8 @@ package org.everit.jetty.server.ecm.internal;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import org.eclipse.jetty.server.session.SessionCache;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.everit.jetty.server.SessionCacheFactory;
 import org.everit.jetty.server.SessionHandlerFactory;
 import org.everit.jetty.server.ecm.SessionHandlerFactoryConstants;
 import org.everit.osgi.ecm.annotation.Component;
@@ -64,7 +64,7 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
 
   private HttpSessionAttributeListener[] sessionAttributeListeners;
 
-  private SessionCache sessionCache;
+  private SessionCacheFactory sessionCacheFactory;
 
   private String sessionIdParameterName;
 
@@ -82,7 +82,9 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
     sessionHandler.setNodeIdInSessionId(this.nodeIdInSessionId);
     sessionHandler.setRefreshCookieAge(this.refreshCookieAge);
     sessionHandler.setSecureRequestOnly(this.secureRequestOnly);
-    sessionHandler.setSessionCache(this.sessionCache);
+    if (this.sessionCacheFactory != null) {
+      sessionHandler.setSessionCache(this.sessionCacheFactory.createSessionCache(sessionHandler));
+    }
     sessionHandler.setSessionCookie(this.cookieName);
     // TODO sessionHandler.setSessionIdManager(metaManager);
     sessionHandler.setSessionIdPathParameterName(this.sessionIdParameterName);
@@ -166,7 +168,7 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
 
   @BooleanAttribute(attributeId = SessionHandlerFactoryConstants.ATTR_SECURE_REQUEST_ONLY,
       defaultValue = SessionHandlerFactoryConstants.DEFAULT_SECURE_REQUEST_ONLY,
-      priority = SessionHandlerFactoryAttributePriority.P06_SECURE_REQUEST_ONLY,
+      priority = SessionHandlerFactoryAttributePriority.P07_SECURE_REQUEST_ONLY,
       label = "Secure request only",
       description = "HTTPS request. Can be overridden by setting "
           + "SessionCookieConfig.setSecure(true), in which case the session cookie will be marked "
@@ -177,7 +179,7 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
 
   @ServiceRef(referenceId = SessionHandlerFactoryConstants.ATTR_SESSION_ATTRIBUTE_LISTENERS,
       optional = true,
-      attributePriority = SessionHandlerFactoryAttributePriority.P04_SESSION_ATTRIBUTE_LISTENERS, // CS_DISABLE_LINE_LENGTH
+      attributePriority = SessionHandlerFactoryAttributePriority.P06_SESSION_ATTRIBUTE_LISTENERS, // CS_DISABLE_LINE_LENGTH
       label = "Session attribute listeners (target)",
       description = "Zero or more filter expression for HttpSessionAttributeListener services")
   public void setSessionAttributeListeners(
@@ -185,12 +187,13 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
     this.sessionAttributeListeners = sessionAttributeListeners;
   }
 
-  @ServiceRef(referenceId = SessionHandlerFactoryConstants.ATTR_SESSION_CACHE, optional = true,
-      attributePriority = SessionHandlerFactoryAttributePriority.P03_SESSION_LISTENERS,
-      label = "Session cache (target)",
-      description = "Filter expression for Session cache services.")
-  public void setSessionCache(SessionCache sessionCache) {
-    this.sessionCache = sessionCache;
+  @ServiceRef(referenceId = SessionHandlerFactoryConstants.ATTR_SESSION_CACHE_FACTORY,
+      optional = true,
+      attributePriority = SessionHandlerFactoryAttributePriority.P04_SESSION_CACHE_FACTORY,
+      label = "Session cache Factory (target)",
+      description = "Filter expression for Session cache factory services.")
+  public void setSessionCacheFactory(SessionCacheFactory sessionCacheFactory) {
+    this.sessionCacheFactory = sessionCacheFactory;
   }
 
   @StringAttribute(attributeId = SessionHandlerFactoryConstants.SESSION_ID_PARAMETER_NAME,
@@ -204,7 +207,7 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
   }
 
   @ServiceRef(referenceId = SessionHandlerFactoryConstants.ATTR_SESSION_LISTENERS, optional = true,
-      attributePriority = SessionHandlerFactoryAttributePriority.P03_SESSION_LISTENERS,
+      attributePriority = SessionHandlerFactoryAttributePriority.P05_SESSION_LISTENERS,
       label = "Session listeners (target)",
       description = "Zero or more filter expression for HttpSessionListener services.")
   public void setSessionListeners(final HttpSessionListener[] sessionListeners) {
@@ -213,7 +216,7 @@ public class SessionHandlerFactoryComponent implements SessionHandlerFactory {
 
   @BooleanAttribute(attributeId = SessionHandlerFactoryConstants.ATTR_USING_COOKIES,
       defaultValue = SessionHandlerFactoryConstants.DEFAULT_USING_COOKIES,
-      priority = SessionHandlerFactoryAttributePriority.P07_USING_COOKIES,
+      priority = SessionHandlerFactoryAttributePriority.P09_USING_COOKIES,
       label = "Using cookies")
   public void setUsingCookies(final boolean usingCookies) {
     this.usingCookies = usingCookies;
