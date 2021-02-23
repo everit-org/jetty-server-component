@@ -24,7 +24,7 @@
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>4.0.0</version>
+  <version>4.1.0-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 
@@ -33,6 +33,7 @@
 
   <properties>
     <projectpath>jetty-server-ecm</projectpath>
+    <jetty.version>9.4.36.v20210114</jetty.version>
   </properties>
 
   <licenses>
@@ -114,7 +115,7 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.20.v20190813</version>
+      <version>${jetty.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>javax.servlet-api</artifactId>
@@ -127,6 +128,14 @@
       <artifactId>org.everit.osgi.bundles.javax.servlet.api</artifactId>
       <version>3.1.0</version>
     </dependency>
+    
+    <!-- HTTP2 -->
+    <dependency>
+      <groupId>org.eclipse.jetty.http2</groupId>
+      <artifactId>http2-server</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <!-- HTTP2 end -->
 
     <dependency>
       <groupId>org.osgi</groupId>

@@ -58,7 +58,7 @@ import org.osgi.framework.Constants;
 @Service
 public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryFactory {
 
-  private final WeakHashMap<CustomHttpConnectionFactory, Boolean> activeConnectionFactories =
+  private final WeakHashMap<CloseableHttpConfigurationProvider, Boolean> activeConnectionFactories =
       new WeakHashMap<>();
 
   private boolean closeAllEndpointsAfterDynamicUpdate = false;
@@ -66,6 +66,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   private Customizer[] customizers;
 
   private boolean delayDispatchUntilContent = false;
+
+  private boolean h2c;
 
   private int headerCacheSize;
 
@@ -89,13 +91,13 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
 
   private boolean sendXPoweredBy;
 
-  private Set<HttpConnectionFactory> cloneActiveHttpConnectionFactories() {
-    Set<CustomHttpConnectionFactory> connectionFactories =
+  private Set<CloseableHttpConfigurationProvider> cloneActiveHttpConnectionFactories() {
+    Set<CloseableHttpConfigurationProvider> connectionFactories =
         cloneReferencedConnectionFactories();
 
-    Set<HttpConnectionFactory> result = new HashSet<>();
+    Set<CloseableHttpConfigurationProvider> result = new HashSet<>();
 
-    for (CustomHttpConnectionFactory customConnectionFactory : connectionFactories) {
+    for (CloseableHttpConfigurationProvider customConnectionFactory : connectionFactories) {
       result.add(customConnectionFactory);
     }
 
@@ -103,8 +105,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
 
   }
 
-  private synchronized Set<CustomHttpConnectionFactory> cloneReferencedConnectionFactories() {
-    Set<CustomHttpConnectionFactory> result = null;
+  private synchronized Set<CloseableHttpConfigurationProvider> cloneReferencedConnectionFactories() {
+    Set<CloseableHttpConfigurationProvider> result = null;
     while (result == null) {
       try {
         result = new HashSet<>(this.activeConnectionFactories.keySet());
@@ -143,8 +145,13 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     httpConfiguration.setSendServerVersion(this.sendServerVersion);
     httpConfiguration.setSendXPoweredBy(this.sendXPoweredBy);
 
-    CustomHttpConnectionFactory httpConnectionFactory = new CustomHttpConnectionFactory(
-        httpConfiguration);
+    CloseableHttpConfigurationProvider httpConnectionFactory = null;
+    if (this.h2c) {
+      httpConnectionFactory = new ClosableH2CConnectionFactory(httpConfiguration);
+    } else {
+      httpConnectionFactory = new CustomHttpConnectionFactory(httpConfiguration);
+    }
+
     httpConnectionFactory.setInputBufferSize(this.inputBufferSize);
 
     this.activeConnectionFactories.put(httpConnectionFactory, true);
@@ -163,7 +170,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
           + "protocol semantics (eg SecureRequestCustomizer).")
   public synchronized void setCustomizers(final Customizer[] customizers) {
     this.customizers = customizers;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setCustomizers(Arrays.asList(customizers));
     }
   }
@@ -179,11 +186,19 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "If true, delay the application dispatch until content is available")
   public synchronized void setDelayDispatchUntilContent(final boolean delayDispatchUntilContent) {
     this.delayDispatchUntilContent = delayDispatchUntilContent;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setDelayDispatchUntilContent(
           delayDispatchUntilContent);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
+  }
+
+  @BooleanAttribute(attributeId = "h2c", defaultValue = false, dynamic = false,
+      priority = HttpConnectionFactoryAttributePriority.P15_H2C_SUPPORT,
+      label = "Plain text HTTP/2 (h2c)",
+      description = "If true, create plain text HTTP/2 (h2c) connections instead of HTTP1.1.")
+  public synchronized void setH2c(boolean h2c) {
+    this.h2c = h2c;
   }
 
   /**
@@ -196,7 +211,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "The maximum allowed size in bytes for a HTTP header field cache.")
   public void setHeaderCacheSize(final int headerCacheSize) {
     this.headerCacheSize = headerCacheSize;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setHeaderCacheSize(headerCacheSize);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -214,7 +229,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "Size of input buffer of the created connections")
   public void setInputBufferSize(final int inputBufferSize) {
     this.inputBufferSize = inputBufferSize;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.setInputBufferSize(inputBufferSize);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -259,7 +274,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
           + "service attacks.")
   public synchronized void setRequestHeaderSize(final int requestHeaderSize) {
     this.requestHeaderSize = requestHeaderSize;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setRequestHeaderSize(requestHeaderSize);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -277,7 +292,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
           + "headers will also consume more memory.")
   public synchronized void setResponseHeaderSize(final int responseHeaderSize) {
     this.responseHeaderSize = responseHeaderSize;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setResponseHeaderSize(responseHeaderSize);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -292,7 +307,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "The TCP/IP port used for CONFIDENTIAL and INTEGRAL redirections.")
   public synchronized void setSecurePort(final int securePort) {
     this.securePort = securePort;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSecurePort(securePort);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -307,7 +322,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "The URI scheme used for CONFIDENTIAL and INTEGRAL redirections.")
   public synchronized void setSecureScheme(final String secureScheme) {
     this.secureScheme = secureScheme;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSecureScheme(secureScheme);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -323,7 +338,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "")
   public synchronized void setSendDateHeader(final boolean sendDateHeader) {
     this.sendDateHeader = sendDateHeader;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendDateHeader(sendDateHeader);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -339,7 +354,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "")
   public void setSendServerVersion(final boolean sendServerVersion) {
     this.sendServerVersion = sendServerVersion;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendServerVersion(sendServerVersion);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -355,7 +370,7 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
       description = "")
   public void setSendXPoweredBy(final boolean sendXPoweredBy) {
     this.sendXPoweredBy = sendXPoweredBy;
-    for (HttpConnectionFactory httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider httpConnectionFactory : cloneActiveHttpConnectionFactories()) {
       httpConnectionFactory.getHttpConfiguration().setSendXPoweredBy(sendXPoweredBy);
     }
     this.closeAllEndpointsAfterDynamicUpdate = true;
@@ -367,15 +382,15 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
   @Update
   public synchronized void update() {
     boolean closeAllEndpoints = this.closeAllEndpointsAfterDynamicUpdate;
-    for (CustomHttpConnectionFactory connectionFactory : cloneReferencedConnectionFactories()) {
+    for (CloseableHttpConfigurationProvider connectionFactory : cloneReferencedConnectionFactories()) {
       HttpConfiguration httpConfiguration = connectionFactory.getHttpConfiguration();
       if (httpConfiguration.getOutputBufferSize() != this.outputBufferSize) {
         httpConfiguration.setOutputBufferSize(this.outputBufferSize);
         closeAllEndpoints = true;
       }
-      if ((this.outputAggregationSize != null)
-          && (httpConfiguration.getOutputAggregationSize() != this.outputAggregationSize
-              .intValue())) {
+      if (this.outputAggregationSize != null
+          && httpConfiguration.getOutputAggregationSize() != this.outputAggregationSize
+              .intValue()) {
         httpConfiguration.setOutputAggregationSize(this.outputAggregationSize);
         closeAllEndpoints = true;
       }

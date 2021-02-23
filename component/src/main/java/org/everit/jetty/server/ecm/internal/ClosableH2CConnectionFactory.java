@@ -20,23 +20,23 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.eclipse.jetty.http2.server.HTTP2CServerConnectionFactory;
 import org.eclipse.jetty.io.Connection;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
 
 /**
- * A {@link HttpConnectionFactory} that provides connections in the way that remembers all
+ * A {@link HTTP2CServerConnectionFactory} that provides connections in the way that remembers all
  * referenced {@link EndPoint}s so they can be closed in case of a dynamic update.
  */
-public class CustomHttpConnectionFactory extends HttpConnectionFactory implements
+public class ClosableH2CConnectionFactory extends HTTP2CServerConnectionFactory implements
     CloseableHttpConfigurationProvider {
 
   private final WeakHashMap<EndPoint, Boolean> referencedEndpoints =
       new WeakHashMap<>();
 
-  public CustomHttpConnectionFactory(final HttpConfiguration config) {
+  public ClosableH2CConnectionFactory(final HttpConfiguration config) {
     super(config);
   }
 
