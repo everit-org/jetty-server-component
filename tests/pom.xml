@@ -23,7 +23,7 @@
   </parent>
 
   <artifactId>org.everit.jetty.server.ecm.tests</artifactId>
-  <version>4.0.0</version>
+  <version>4.1.0-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 
@@ -31,6 +31,8 @@
 
   <properties>
     <projectpath>jetty-server-ecm</projectpath>
+    <jetty.version>9.4.36.v20210114</jetty.version>
+    <org.apache.aries.spifly.dynamic.bundle.version>1.3.2</org.apache.aries.spifly.dynamic.bundle.version>
   </properties>
 
   <licenses>
@@ -107,6 +109,15 @@
                   <mvel2.disable.jit>-Dmvel2.disable.jit=true</mvel2.disable.jit>
                 </vmArguments>
               </launchConfig>
+              <artifacts>
+                <artifact>
+                  <coordinates>org.apache.aries.spifly:org.apache.aries.spifly.dynamic.bundle:${org.apache.aries.spifly.dynamic.bundle.version}</coordinates>
+                  <targetFile>org.apache.aries.spifly.dynamic.bundle-${org.apache.aries.spifly.dynamic.bundle.version}.jar</targetFile>
+                  <properties>
+                    <bundle.startLevel>1</bundle.startLevel>
+                  </properties>
+                </artifact>
+              </artifacts>
             </environment>
           </environments>
           <syncBackFolders>
@@ -140,6 +151,20 @@
       <groupId>org.everit.jetty</groupId>
       <artifactId>org.everit.jetty.osgi.boot</artifactId>
       <version>1.1.0</version>
+    </dependency>
+    
+    <!-- HTTP2 Client -->
+    <dependency>
+      <groupId>org.eclipse.jetty.http2</groupId>
+      <artifactId>http2-http-client-transport</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    
+    <!-- SPI Fly for some HTTP/2 class -->
+    <dependency>
+      <groupId>org.apache.aries.spifly</groupId>
+      <artifactId>org.apache.aries.spifly.dynamic.bundle</artifactId>
+      <version>${org.apache.aries.spifly.dynamic.bundle.version}</version>
     </dependency>
 
     <dependency>

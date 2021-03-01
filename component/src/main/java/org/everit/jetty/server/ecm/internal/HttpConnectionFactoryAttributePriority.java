@@ -48,6 +48,8 @@ public final class HttpConnectionFactoryAttributePriority {
 
   public static final int P14_DELAY_DISPATCH_UNTIL_CONTENT = 14;
 
+  public static final int P15_H2C_SUPPORT = 15;
+
   private HttpConnectionFactoryAttributePriority() {
   }
 }

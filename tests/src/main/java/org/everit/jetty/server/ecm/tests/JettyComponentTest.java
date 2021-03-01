@@ -27,7 +27,11 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http2.client.HTTP2Client;
+import org.eclipse.jetty.http2.client.http.HttpClientTransportOverHTTP2;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.NetworkConnector;
 import org.eclipse.jetty.server.Server;
@@ -166,5 +170,23 @@ public class JettyComponentTest {
       throw new UncheckedIOException(e);
     }
 
+  }
+
+  @Test
+  public void testPlainTextHttp2Support() throws Exception {
+    InetAddress localHost = InetAddress.getLocalHost();
+    HttpClient httpClient = new HttpClient(new HttpClientTransportOverHTTP2(new HTTP2Client()));
+    httpClient.start();
+
+    ContentResponse contentResponse =
+        httpClient
+            .GET("http://" + localHost.getHostName() + ":" + this.port + "/sample/echoremote");
+
+    JSONObject jsonObject = new JSONObject(contentResponse.getContentAsString());
+
+    httpClient.stop();
+
+    Assert.assertEquals(localHost.getHostName(), jsonObject.getString("serverName"));
+    Assert.assertEquals(String.valueOf(this.port), jsonObject.get("serverPort").toString());
   }
 }
