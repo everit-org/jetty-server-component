@@ -24,6 +24,8 @@ public final class HttpConnectionFactoryFactoryConstants {
 
   public static final String ATTR_DELAY_DISPATCH_UNTIL_CONTENT = "delayDispatchUntilContent";
 
+  public static final String ATTR_H2C = "h2c";
+
   public static final String ATTR_HEADER_CACHE_SIZE = "headerCacheSize";
 
   public static final String ATTR_INPUT_BUFFER_SIZE = "inputBufferSize";
@@ -45,6 +47,8 @@ public final class HttpConnectionFactoryFactoryConstants {
   public static final String ATTR_SEND_SERVER_VERSION = "sendServerVersion";
 
   public static final String ATTR_SEND_X_POWERED_BY = "sendXPoweredBy";
+
+  public static final boolean DEFAULT_H2C = false;
 
   public static final int DEFAULT_HEADER_CACHE_SIZE = 512;
 

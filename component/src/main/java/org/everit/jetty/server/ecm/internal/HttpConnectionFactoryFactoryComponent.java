@@ -193,7 +193,8 @@ public class HttpConnectionFactoryFactoryComponent implements ConnectionFactoryF
     this.closeAllEndpointsAfterDynamicUpdate = true;
   }
 
-  @BooleanAttribute(attributeId = "h2c", defaultValue = false, dynamic = false,
+  @BooleanAttribute(attributeId = HttpConnectionFactoryFactoryConstants.ATTR_H2C,
+      defaultValue = HttpConnectionFactoryFactoryConstants.DEFAULT_H2C, dynamic = false,
       priority = HttpConnectionFactoryAttributePriority.P15_H2C_SUPPORT,
       label = "Plain text HTTP/2 (h2c)",
       description = "If true, create plain text HTTP/2 (h2c) connections instead of HTTP1.1.")

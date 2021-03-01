@@ -19,12 +19,12 @@
   <parent>
     <groupId>org.everit.config</groupId>
     <artifactId>org.everit.config.oss</artifactId>
-    <version>8.0.0</version>
+    <version>9.0.0</version>
   </parent>
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.1.0</version>
 
   <packaging>bundle</packaging>
 
@@ -82,7 +82,7 @@
               *
             </Import-Package>
             <Export-Package>
-              org.everit.jetty.server.ecm;version="4.0.0"
+              org.everit.jetty.server.ecm;version="4.1.0"
             </Export-Package>
             <_plugin>org.everit.osgi.ecm.bnd.ECMBndAnalyzerPlugin</_plugin>
           </instructions>
