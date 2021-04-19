@@ -24,7 +24,7 @@
 
   <groupId>org.everit.jetty</groupId>
   <artifactId>org.everit.jetty.server.ecm</artifactId>
-  <version>4.1.0</version>
+  <version>4.1.1</version>
 
   <packaging>bundle</packaging>
 
@@ -33,7 +33,7 @@
 
   <properties>
     <projectpath>jetty-server-ecm</projectpath>
-    <jetty.version>9.4.36.v20210114</jetty.version>
+    <org.eclipse.jetty.version>9.4.36.v20210114</org.eclipse.jetty.version>
   </properties>
 
   <licenses>
@@ -110,12 +110,13 @@
     <dependency>
       <groupId>org.everit.jetty</groupId>
       <artifactId>org.everit.jetty.server.api</artifactId>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>${jetty.version}</version>
+      <version>${org.eclipse.jetty.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <artifactId>javax.servlet-api</artifactId>
@@ -133,7 +134,8 @@
     <dependency>
       <groupId>org.eclipse.jetty.http2</groupId>
       <artifactId>http2-server</artifactId>
-      <version>${jetty.version}</version>
+      <version>${org.eclipse.jetty.version}</version>
+      <scope>provided</scope>
       <exclusions>
         <exclusion>
           <artifactId>javax.servlet-api</artifactId>
@@ -166,5 +168,38 @@
       <version>3.0.0</version>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>ci</id>
+      <activation>
+        <property>
+          <name>env.CI</name>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>6.1.2</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>aggregate</goal>
+                </goals>
+                <configuration>
+                  <!-- high or above -->
+                  <failBuildOnCVSS>7</failBuildOnCVSS>
+                  <suppressionFile>${nvd.supprpression.file}</suppressionFile>
+                  <skipProvidedScope>true</skipProvidedScope>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>
